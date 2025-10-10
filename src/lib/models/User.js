@@ -52,7 +52,6 @@ UserSchema.methods.comparePassword = async function (candidatePassword) {
     return bcrypt.compare(candidatePassword, this.password);
 };
 
-
 // Check if the model already exists to prevent Mongoose redifinition errors
 const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
