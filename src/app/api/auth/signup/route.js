@@ -13,17 +13,21 @@ export async function POST(request) {
     await connectDB();
     
     const { email, username, password } = await request.json();
-
+    console.log(email , username , password);
+    
     if (!email || !username || !password) {
       return NextResponse.json({ message: "Missing required fields." }, { status: 400 });
     }
 
     // 1. Check if user already exists
-    const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+    const existingUser = await User.findOne({ email });
+
+    console.log(existingUser);
+    
     if (existingUser) {
       return NextResponse.json({ message: "User with this email or username already exists." }, { status: 409 });
     }
-
+    console.log("Heyy");
     // 2. Create the new user in MongoDB
     const newUser = await User.create({ email, username, password });
     
