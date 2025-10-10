@@ -10,7 +10,7 @@ export default function DashboardPage() {
   // Use the single, correct imported type
   const { currentUser, loading, signOut } = useAuth() as AuthContextType;
   const router = useRouter();
-
+console.log("hey");
   // Redirect if not logged in after loading finishes
   useEffect(() => {
     if (!loading && !currentUser) {
