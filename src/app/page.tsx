@@ -1,7 +1,7 @@
 "use client"; // <-- CRITICAL: Makes it a client component
 
 import Image from "next/image";
-import { useAuth } from '@/components/AuthContext'; 
+import { useAuth } from '@/app/components/AuthContext'; 
 import { useRouter } from 'next/navigation';
 import { User } from 'firebase/auth'; 
 import { AuthContextType } from '@/types/auth'; // <-- IMPORT THE NEW TYPE

@@ -1,9 +1,9 @@
 // src/app/api/auth/route.js
 
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
-import User from "@/lib/models/User";
-import { adminAuth } from "@/lib/firebaseAdmin"; // <-- Import the Admin SDK
+import { connectDB } from "@/app/lib/mongodb";
+import User from "@/app/lib/models/User";
+import { adminAuth } from "@/app/lib/firebaseAdmin"; // <-- Import the Admin SDK
 
 /**
  * Handles POST requests for user registration (Sign Up).

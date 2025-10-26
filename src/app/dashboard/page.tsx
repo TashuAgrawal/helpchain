@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from '@/components/AuthContext';
+import { useAuth } from '@/app/components/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { AuthContextType, EnrichedUser } from '@/types/auth'; // Importing the correct type definitions
@@ -10,7 +10,7 @@ export default function DashboardPage() {
   // Use the single, correct imported type
   const { currentUser, loading, signOut } = useAuth() as AuthContextType;
   const router = useRouter();
-console.log("hey");
+  console.log("hey");
   // Redirect if not logged in after loading finishes
   useEffect(() => {
     if (!loading && !currentUser) {
@@ -23,7 +23,7 @@ console.log("hey");
     // If loading, show status. If not loading and no user, we are redirecting.
     return <div className="p-8 text-xl">Checking permissions...</div>;
   }
-  
+
   // NOTE: currentUser is now correctly typed as EnrichedUser due to the assertion
   // and the updated types file.
 
@@ -34,7 +34,7 @@ console.log("hey");
       <p className="mt-4 text-lg">
         You are successfully logged in and accessing protected content.
       </p>
-      
+
       <div className="mt-6 p-4 bg-gray-100 rounded-lg">
         {/* 'currentUser' is now typed as EnrichedUser, so 'username' is safe */}
         {/* We can safely cast currentUser to EnrichedUser here for clarity, though TS now understands it */}

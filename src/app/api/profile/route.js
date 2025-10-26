@@ -1,21 +1,18 @@
 // /app/api/profile/route.js
 
 import { NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb'; // Assuming this exports connectDB directly
-import { adminAuth } from '@/lib/firebaseAdmin'; // Assuming this exports adminAuth
-import User from '@/lib/models/User';
+import { connectDB } from '@/app/lib/mongodb'; // Assuming this exports connectDB directly
+import { adminAuth } from '@/app/lib/firebaseAdmin'; // Assuming this exports adminAuth
+import User from '@/app/lib/models/User';
 
 // Helper function to handle GET requests
 export async function GET(request) {
     try {
         // Ensure necessary dependencies are available
-
-        
         if (!adminAuth) {
             console.error("Firebase Admin Auth not initialized.");
             return NextResponse.json({ message: "Service dependency error." }, { status: 500 });
         }
-        
         await connectDB();
         console.log("BYE");
         

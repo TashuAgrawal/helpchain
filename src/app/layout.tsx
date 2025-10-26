@@ -1,6 +1,6 @@
 // src/app/layout.tsx (Alternative concise syntax)
 
-import { AuthProvider } from '@/components/AuthContext';
+import { AuthProvider } from '@/app/components/AuthContext';
 import './globals.css'; 
 import { ReactNode } from 'react'; // Still need this import
 
