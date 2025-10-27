@@ -9,9 +9,7 @@ import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthContext";
 
-
 const LoginForm = () => {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");

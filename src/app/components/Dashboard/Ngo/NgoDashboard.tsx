@@ -13,10 +13,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 import { NgoNavbar } from "@/app/components/Navbar/NgoNavbar/NgoNavbar";
 
-interface NGODashboardProps {
-  onLogout: () => void;
-}
-
 interface Campaign {
   id: number;
   title: string;
@@ -80,7 +76,7 @@ interface TeamMember {
   status: string;
 }
 
-export function NGODashboard({ onLogout }: NGODashboardProps) {
+export function NGODashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   
   // Dialog states
@@ -372,7 +368,7 @@ export function NGODashboard({ onLogout }: NGODashboardProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      < NgoNavbar links={navLinks} onLogout={onLogout} userName="Clean Water Initiative" />
+      < NgoNavbar links={navLinks} userName="Clean Water Initiative" />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="grid w-full grid-cols-5 dark:bg-gray-800">
