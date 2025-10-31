@@ -1,35 +1,18 @@
 "use client";
 import { useState } from "react";
 import {
-  LayoutDashboard,
-  Building2,
-  Users,
-  DollarSign,
-  FileText,
-  LogOut,
   Check,
   X,
   Download,
-  TrendingUp,
-  Activity,
-  Star,
-  MessageCircle,
-  Eye,
-  Edit,
-  Trash2,
-  Search,
-  Filter,
   UserX,
   UserCheck,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../ui/card";
 import { Button } from "../../ui/button";
 import { Badge } from "../../ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../ui/table";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../ui/dialog";
 import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 import { toast } from "sonner";
 import Sidebar from "./Sidebar";
 import StatCards from "./StatCards";
@@ -37,10 +20,12 @@ import DonationImpact from "./DonationImpact";
 import Leaderboard from "./Leaderboard";
 import RecentActivities from "./RecentActivities";
 import UserFeedback from "./UserFeedback";
-import PendingApprovals from "./PendeingApprovals";
 import ActiveNgos from "./ActiveNgos";
+import AllUsers from "./AllUsers";
+import NgoSearch from "./NgoSearch";
+import TransactionsTable from "./TransactionsTable";
+import PendingApprovals from "./PendeingApprovals";
 
-// Sample data for illustration
 interface PendingNGO {
   id: number;
   name: string;
@@ -97,7 +82,6 @@ export function AdminDashboard() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
 
-  // State for pending NGOs
   const [pendingNGOs, setPendingNGOs] = useState<PendingNGO[]>([
     {
       id: 1,
@@ -125,7 +109,6 @@ export function AdminDashboard() {
     },
   ]);
 
-  // State for active NGOs
   const [activeNGOs, setActiveNGOs] = useState<ActiveNGO[]>([
     {
       id: 3,
@@ -156,7 +139,6 @@ export function AdminDashboard() {
     },
   ]);
 
-  // State for users
   const [users, setUsers] = useState<User[]>([
     {
       id: 1,
@@ -200,7 +182,6 @@ export function AdminDashboard() {
     },
   ]);
 
-  // State for transactions
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([
     {
       id: 1,
@@ -257,12 +238,10 @@ export function AdminDashboard() {
     { user: "Priya Sinha", feedback: "Would love more frequent updates from NGOs.", time: "Yesterday", rating: 4 },
   ];
 
-  // Stats
   const totalDonations = allTransactions.reduce((sum, t) => sum + t.amount, 0);
   const totalUsers = users.length;
   const totalActiveNGOs = activeNGOs.length;
 
-  // Handle NGO approval
   const handleApproveNGO = (ngo: PendingNGO) => {
     const newActiveNGO: ActiveNGO = {
       id: ngo.id,
@@ -284,7 +263,6 @@ export function AdminDashboard() {
     toast.error(`${ngo?.name} application has been rejected`);
   };
 
-  // Handle NGO deactivation
   const handleDeactivateNGO = (ngoId: number) => {
     setActiveNGOs(activeNGOs.map(ngo =>
       ngo.id === ngoId ? { ...ngo, status: "suspended" } : ngo
@@ -293,7 +271,6 @@ export function AdminDashboard() {
     setIsEditDialogOpen(false);
   };
 
-  // Handle user suspension
   const handleSuspendUser = (userId: number) => {
     setUsers(users.map(user =>
       user.id === userId ? { ...user, status: user.status === "active" ? "suspended" : "active" } : user
@@ -303,7 +280,6 @@ export function AdminDashboard() {
     setIsUserDialogOpen(false);
   };
 
-  // Filter transactions
   const filteredTransactions = allTransactions.filter(transaction => {
     const matchesSearch =
       transaction.donor.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -353,162 +329,41 @@ export function AdminDashboard() {
               setIsViewDialogOpen={setIsViewDialogOpen}
               setSelectedNGO={setSelectedNGO}
             />
-           <ActiveNgos
-                activeNGOs={activeNGOs}
-                setSelectedNGO={setSelectedNGO}
-                setIsEditDialogOpen={setIsEditDialogOpen}
-              />
+            <ActiveNgos
+              activeNGOs={activeNGOs}
+              setSelectedNGO={setSelectedNGO}
+              setIsEditDialogOpen={setIsEditDialogOpen}
+            />
           </div>
         )}
-
-        {/* Users Tab */}
         {activeTab === "users" && (
           <div>
             <div className="mb-8">
               <h1 className="text-gray-900 dark:text-white mb-2">Manage Users</h1>
               <p className="text-gray-600 dark:text-gray-300">View, filter, and manage platform users</p>
             </div>
-            <Card className="rounded-xl border-none shadow-sm bg-white dark:bg-gray-800 transition-colors duration-300">
-              <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-white">All Users</CardTitle>
-                <CardDescription className="dark:text-gray-400">Platform users with donation history</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="dark:text-gray-300">Name</TableHead>
-                      <TableHead className="dark:text-gray-300">Email</TableHead>
-                      <TableHead className="dark:text-gray-300">Total Donated</TableHead>
-                      <TableHead className="dark:text-gray-300">Donations</TableHead>
-                      <TableHead className="dark:text-gray-300">Badge</TableHead>
-                      <TableHead className="dark:text-gray-300">Status</TableHead>
-                      <TableHead className="text-right dark:text-gray-300">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {users.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell className="dark:text-gray-200">{user.name}</TableCell>
-                        <TableCell className="text-gray-600 dark:text-gray-400">{user.email}</TableCell>
-                        <TableCell className="text-teal-600 dark:text-teal-400">${user.totalDonations.toLocaleString()}</TableCell>
-                        <TableCell className="dark:text-gray-300">{user.donationCount}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="dark:bg-gray-700 dark:text-gray-300">{user.badge}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant="secondary"
-                            className={user.status === "active"
-                              ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                              : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"}
-                          >
-                            {user.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="gap-1 rounded-lg dark:border-gray-600 dark:hover:bg-gray-700"
-                              onClick={() => {
-                                setSelectedUser(user);
-                                setIsUserDialogOpen(true);
-                              }}
-                            >
-                              <Eye className="w-4 h-4" />View
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            <AllUsers
+              users={users}
+              setSelectedUser={setSelectedUser}
+              setIsUserDialogOpen={setIsUserDialogOpen}
+            />
           </div>
         )}
-
-        {/* Transactions Tab */}
         {activeTab === "transactions" && (
           <div>
             <div className="mb-8">
               <h1 className="text-gray-900 dark:text-white mb-2">All Transactions</h1>
               <p className="text-gray-600 dark:text-gray-300">Full donation history with transparency</p>
             </div>
-
-            {/* Search and Filter */}
-            <div className="mb-6 flex gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  placeholder="Search by donor or NGO..."
-                  className="pl-10 rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <Select value={filterCategory} onValueChange={setFilterCategory}>
-                <SelectTrigger className="w-48 rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200">
-                  <Filter className="w-4 h-4 mr-2" />
-                  <SelectValue placeholder="Filter by category" />
-                </SelectTrigger>
-                <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                  <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="Education">Education</SelectItem>
-                  <SelectItem value="Health">Health</SelectItem>
-                  <SelectItem value="Water Access">Water Access</SelectItem>
-                  <SelectItem value="Environment">Environment</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <Card className="rounded-xl border-none shadow-sm bg-white dark:bg-gray-800 transition-colors duration-300">
-              <CardContent className="p-6">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="dark:text-gray-300">Donor</TableHead>
-                      <TableHead className="dark:text-gray-300">NGO</TableHead>
-                      <TableHead className="dark:text-gray-300">Amount</TableHead>
-                      <TableHead className="dark:text-gray-300">Date</TableHead>
-                      <TableHead className="dark:text-gray-300">Status</TableHead>
-                      <TableHead className="dark:text-gray-300">Utilization</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredTransactions.map((transaction) => (
-                      <TableRow key={transaction.id}>
-                        <TableCell className="dark:text-gray-200">{transaction.donor}</TableCell>
-                        <TableCell className="text-gray-600 dark:text-gray-400">{transaction.ngo}</TableCell>
-                        <TableCell className="text-teal-600 dark:text-teal-400">${transaction.amount}</TableCell>
-                        <TableCell className="text-gray-600 dark:text-gray-400">{transaction.date}</TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
-                            {transaction.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-gray-700 dark:text-gray-300">
-                          {transaction.utilization}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    {filteredTransactions.length === 0 && (
-                      <TableRow>
-                        <TableCell colSpan={6} className="text-center py-8 text-gray-500 dark:text-gray-400">
-                          No transactions found
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            <NgoSearch
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              filterCategory={filterCategory}
+              setFilterCategory={setFilterCategory}
+            />
+            <TransactionsTable filteredTransactions={filteredTransactions} />
           </div>
         )}
-
-        {/* Reports Tab */}
         {activeTab === "reports" && (
           <div>
             <div className="mb-8">
@@ -577,7 +432,6 @@ export function AdminDashboard() {
         )}
       </main>
 
-      {/* View NGO Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
         <DialogContent className="rounded-xl dark:bg-gray-800 dark:border-gray-700 max-w-2xl">
           <DialogHeader>
@@ -646,7 +500,6 @@ export function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit/Manage Active NGO Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="rounded-xl dark:bg-gray-800 dark:border-gray-700">
           <DialogHeader>
@@ -706,7 +559,6 @@ export function AdminDashboard() {
         </DialogContent>
       </Dialog>
 
-      {/* View/Manage User Dialog */}
       <Dialog open={isUserDialogOpen} onOpenChange={setIsUserDialogOpen}>
         <DialogContent className="rounded-xl dark:bg-gray-800 dark:border-gray-700">
           <DialogHeader>
