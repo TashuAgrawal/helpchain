@@ -31,7 +31,7 @@ interface AuthContextType {
   currentUser: EnrichedUser | null;
   loading: boolean;
   error: string | null;
-  signUp: (params: { email: string; username: string; password: string }) => Promise<{
+  signUp: (params: { email: string; username: string; password: string; role:string }) => Promise<{
     success: boolean;
     message?: string;
   }>;
@@ -159,10 +159,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       email,
       username,
       password,
+      role,
     }: {
       email: string;
       username: string;
       password: string;
+      role:string;
     }) => {
       setError(null);
       setLoading(true);
@@ -174,6 +176,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           email,
           username,
           password,
+          role,
         });
 
         if (response.status === 201 && response.data.customToken) {

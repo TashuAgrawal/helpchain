@@ -12,10 +12,10 @@ export async function POST(request) {
   try {
     await connectDB();
     
-    const { email, username, password } = await request.json();
-    console.log(email , username , password);
+    const { email, username, password , role } = await request.json();
+    console.log(email , username , password , role);
     
-    if (!email || !username || !password) {
+    if (!email || !username || !password || !role) {
       return NextResponse.json({ message: "Missing required fields." }, { status: 400 });
     }
 
@@ -29,7 +29,7 @@ export async function POST(request) {
     }
     console.log("Heyy");
     // 2. Create the new user in MongoDB
-    const newUser = await User.create({ email, username, password });
+    const newUser = await User.create({ email, username, password,role });
     
     // 3. Generate a Custom Token using the Firebase Admin SDK
     //    We use the MongoDB _id as the unique identifier (uid) for Firebase.

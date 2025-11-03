@@ -8,16 +8,11 @@ import { Label } from "./ui/label";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthContext";
-// import { ImageWithFallback } from "./figma/ImageWithFallback";
-
-
-
 
 const SignUpForm = () => {
+  const { signUp } = useAuth();
+  const router = useRouter();
 
-  const { signUp } = useAuth(); 
-
-  const router=useRouter();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -41,7 +36,7 @@ const SignUpForm = () => {
     }
   };
 
-  const handleSubmit = async(e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (!formData.acceptedTerms) {
@@ -53,24 +48,23 @@ const SignUpForm = () => {
       return;
     }
 
-    const { email, name, password } = formData;
+    const { email, name, password, role } = formData;
     setLoading(true);
 
-     try {
-      // Call the signUp function from AuthContext (which now handles the API and client sign-in)
-      const result = await signUp({ email, username:name, password });
-      if (result.success) {
-        // Successful sign-up and Firebase sign-in
-        router.push('/'); // Redirect to the homepage or dashboard
-      } else {
-        // Handle server/API errors returned by signUp
-      }
-    } catch (err) {
-      // Handle unexpected client-side errors
-      console.error("Sign-up process failed:", err);
-    } finally {
-    }
-    setTimeout(() => setLoading(false), 2000);
+    try {
+      // Pass role also here to signUp
+      const result = await signUp({ email, username: name, password, role });
+      if (result.success) {
+        router.push("/");
+      } else {
+        setError(result.message || "Signup failed, please try again.");
+      }
+    } catch (err) {
+      console.error("Sign-up process failed:", err);
+      setError("An unexpected error occurred.");
+    } finally {
+      setTimeout(() => setLoading(false), 2000);
+    }
   };
 
   return (
@@ -79,11 +73,7 @@ const SignUpForm = () => {
         {/* Left Side - Illustration */}
         <div className="hidden md:block">
           <div className="rounded-2xl overflow-hidden shadow-xl">
-            {/* <ImageWithFallback
-              src="https://images.unsplash.com/photo-1554136369-724d2c41d883?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZWxwaW5nJTIwaGFuZHMlMjBjaGFyaXR5fGVufDF8fHx8MTc2MDgwMzM1MXww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-              alt="Helping hands"
-              className="w-full h-full object-cover"
-            /> */}
+            {/* Image placeholder */}
           </div>
           <div className="mt-6 text-center">
             <h3 className="text-gray-900 dark:text-white mb-2">Join Our Community</h3>
@@ -102,9 +92,7 @@ const SignUpForm = () => {
             </div>
             <div>
               <h1 className="text-gray-900 dark:text-white">TransparentAid</h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Start making a difference today
-              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Start making a difference today</p>
             </div>
           </div>
 
@@ -125,9 +113,7 @@ const SignUpForm = () => {
                 type="text"
                 placeholder="John Doe"
                 value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
                 className="rounded-lg"
               />
@@ -140,9 +126,7 @@ const SignUpForm = () => {
                 type="email"
                 placeholder="your.email@example.com"
                 value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
                 className="rounded-lg"
               />
@@ -191,9 +175,7 @@ const SignUpForm = () => {
                 type={showPassword ? "text" : "password"}
                 placeholder="Re-enter your password"
                 value={formData.confirmPassword}
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 required
                 className="rounded-lg"
               />
@@ -206,9 +188,7 @@ const SignUpForm = () => {
               <Label>Register as</Label>
               <RadioGroup
                 value={formData.role}
-                onValueChange={(value:string) =>
-                  setFormData({ ...formData, role: value })
-                }
+                onValueChange={(value: string) => setFormData({ ...formData, role: value })}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="user" id="signup-user" />
@@ -236,9 +216,7 @@ const SignUpForm = () => {
                 type="checkbox"
                 id="terms"
                 checked={formData.acceptedTerms}
-                onChange={() =>
-                  setFormData({ ...formData, acceptedTerms: !formData.acceptedTerms })
-                }
+                onChange={() => setFormData({ ...formData, acceptedTerms: !formData.acceptedTerms })}
                 required
                 className="rounded checked:bg-blue-600"
               />
@@ -262,7 +240,7 @@ const SignUpForm = () => {
               Already have an account?{" "}
               <button
                 type="button"
-                onClick={()=>router.push("/login")}
+                onClick={() => router.push("/login")}
                 className="text-blue-600 hover:text-blue-700"
               >
                 Login
@@ -273,7 +251,6 @@ const SignUpForm = () => {
       </div>
     </div>
   );
-}
+};
 
-
-export default SignUpForm
+export default SignUpForm;

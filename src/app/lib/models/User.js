@@ -23,7 +23,7 @@ const UserSchema = new Schema({
   // Role for 'Helpchain' (e.g., 'user', 'admin')
   role: {
     type: String,
-    enum: ['user', 'admin'], 
+    enum: ['user', 'admin','ngo'], 
     default: 'user',
   },
 }, { 

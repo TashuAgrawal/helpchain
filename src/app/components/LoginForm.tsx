@@ -1,34 +1,31 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import { Heart } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthContext";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("user");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
 
-  const handleSubmit = async(e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // 1. Call the login function from the AuthContext
+      // Call login without role now
       const result = await login({ email, password });
       if (result.success) {
-        console.log("Login successful. Setting redirect flag.");
+        console.log("Login successful. Redirecting.");
         router.push("/");
-      } 
+      }
     } catch (error) {
-      console.error('Login form submission error:', error);
-    } finally {
+      console.error("Login form submission error:", error);
     }
   };
 
@@ -88,23 +85,6 @@ const LoginForm = () => {
                 {showPassword ? "Hide" : "Show"}
               </button>
             </div>
-            <div className="space-y-2">
-              <Label>Login as</Label>
-              <RadioGroup value={role} onValueChange={setRole}>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="user" id="user" />
-                  <Label htmlFor="user" className="cursor-pointer">User / Donor</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="ngo" id="ngo" />
-                  <Label htmlFor="ngo" className="cursor-pointer">NGO</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="admin" id="admin" />
-                  <Label htmlFor="admin" className="cursor-pointer">Admin</Label>
-                </div>
-              </RadioGroup>
-            </div>
 
             <Button
               type="submit"
@@ -123,7 +103,7 @@ const LoginForm = () => {
               Don't have an account?{" "}
               <button
                 type="button"
-                onClick={()=>router.push("/signup")}
+                onClick={() => router.push("/signup")}
                 className="text-blue-600 hover:text-blue-700"
               >
                 Sign up
@@ -134,13 +114,7 @@ const LoginForm = () => {
 
         {/* Right Side - Image */}
         <div className="hidden md:block">
-          <div className="rounded-2xl overflow-hidden shadow-xl">
-            {/* <ImageWithFallback
-              src="https://images.unsplash.com/photo-1710093072215-65070f9cf93e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGFyaXR5JTIwZG9uYXRpb24lMjBjb21tdW5pdHl8ZW58MXx8fHwxNzYwODU4MzQ0fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral"
-              alt="Community helping hands"
-              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-            /> */}
-          </div>
+          <div className="rounded-2xl overflow-hidden shadow-xl">{/* Image placeholder */}</div>
           <div className="mt-6 text-center">
             <h3 className="text-gray-900 dark:text-white mb-2">Building Trust Through Transparency</h3>
             <p className="text-gray-600 dark:text-gray-400">
@@ -151,6 +125,6 @@ const LoginForm = () => {
       </div>
     </div>
   );
-}
+};
 
-export default LoginForm
+export default LoginForm;
