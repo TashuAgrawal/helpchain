@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useAuth } from '@/app/components/AuthContext'; 
 import { useRouter } from 'next/navigation';
 import { User } from 'firebase/auth'; 
-import { AuthContextType } from '@/types/auth'; // <-- IMPORT THE NEW TYPE
+import { AuthContextType } from '@/app/types/auth'; // <-- IMPORT THE NEW TYPE
 
 // Type Guard: Helps TypeScript confirm the user object is valid
 const isFirebaseUser = (user: any): user is User => {

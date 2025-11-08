@@ -19,7 +19,7 @@ const LoginForm = () => {
     e.preventDefault();
     try {
       // Call login without role now
-      const result = await login({ email, password });
+      const result = await login({ email, password , role : "ngo" });
       if (result.success) {
         console.log("Login successful. Redirecting.");
         router.push("/");

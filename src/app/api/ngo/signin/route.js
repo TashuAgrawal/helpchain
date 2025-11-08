@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/app/lib/mongodb";
-import User from "@/app/lib/models/User"; 
+import NGO from "@/app/lib/models/NGO"; 
 import { adminAuth } from "@/app/lib/firebaseAdmin";
 
 /**
- * Handles POST requests for user login (Sign In).
+ * Handles POST requests for NGO login (Sign In).
  * Checks MongoDB credentials and issues a Firebase Custom Token.
  */
 export async function POST(request) {
@@ -17,21 +17,24 @@ export async function POST(request) {
       return NextResponse.json({ message: "Email and password are required." }, { status: 400 });
     }
 
-    // 1. Find the user by email in MongoDB, explicitly select password field
-    const user = await User.findOne({ email }).select('+password');
+    // Find the NGO by email in MongoDB, explicitly select password field
+    const ngo = await NGO.findOne({ email }).select('+password');
 
-    // 2. Check if user exists and password is correct
-    if (!user || !(await user.comparePassword(password))) {
+    // Check if NGO exists and password is correct
+    if (!ngo || !(await ngo.comparePassword(password))) {
       return NextResponse.json({ message: "Invalid credentials." }, { status: 401 });
     }
 
-    // No NGO status check needed because only 'user' and 'admin' roles exist now
+    // Check if NGO is approved before allowing login
+    if (ngo.status !== 'approved') {
+      return NextResponse.json({ message: `NGO registration is ${ngo.status}. Access denied.` }, { status: 403 });
+    }
 
-    // 3. Generate Firebase Custom Token
-    const firebaseUid = user._id.toString();
+    // Generate Firebase Custom Token using MongoDB _id as UID
+    const firebaseUid = ngo._id.toString();
     const customToken = await adminAuth.createCustomToken(firebaseUid, {
-      role: user.role,
-      mongoId: firebaseUid
+      role: 'ngo',
+      mongoId: firebaseUid,
     });
 
     return NextResponse.json({ 
@@ -40,7 +43,7 @@ export async function POST(request) {
     }, { status: 200 });
 
   } catch (error) {
-    console.error("Login Error:", error);
+    console.error("NGO Login Error:", error);
     return NextResponse.json({ message: "An unexpected error occurred during login." }, { status: 500 });
   }
 }

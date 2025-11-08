@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Check,
   X,
@@ -10,8 +10,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../ui/card";
 import { Button } from "../../ui/button";
 import { Badge } from "../../ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../ui/dialog";
-import { Input } from "../../ui/input";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../ui/dialog";
 import { Label } from "../../ui/label";
 import { toast } from "sonner";
 import Sidebar from "./Sidebar";
@@ -25,6 +24,10 @@ import AllUsers from "./AllUsers";
 import NgoSearch from "./NgoSearch";
 import TransactionsTable from "./TransactionsTable";
 import PendingApprovals from "./PendeingApprovals";
+import fetchPendingNgos from "@/Helper/AdminServices/Pendingngo"
+import handleNgoApproval from "@/Helper/AdminServices/StatusChange"
+import fetchApprovedNgos from "@/Helper/AdminServices/Approvedngos"
+import fetchAllUsers from "@/Helper/AdminServices/Allusers"
 
 interface PendingNGO {
   id: number;
@@ -82,148 +85,66 @@ export function AdminDashboard() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
 
-  const [pendingNGOs, setPendingNGOs] = useState<PendingNGO[]>([
-    {
-      id: 1,
-      name: "Hope Foundation",
-      cause: "Education",
-      submittedDate: "2025-10-15",
-      email: "contact@hopefoundation.org",
-      progress: "Documents Verified",
-      totalDonations: 5000,
-      description: "Focused on providing quality education to underprivileged children in rural areas.",
-      registrationNumber: "NGO-2024-001234",
-      address: "123 Education St, Mumbai, Maharashtra"
-    },
-    {
-      id: 2,
-      name: "Green Earth Initiative",
-      cause: "Environment",
-      submittedDate: "2025-10-17",
-      email: "info@greenearth.org",
-      progress: "Pending Verification",
-      totalDonations: 2800,
-      description: "Environmental conservation and tree plantation drives across India.",
-      registrationNumber: "NGO-2024-005678",
-      address: "456 Green Ave, Bangalore, Karnataka"
-    },
-  ]);
+  const [pendingNGOs, setPendingNGOs] = useState<PendingNGO[]>([]);
+  const [activeNGOs, setActiveNGOs] = useState<ActiveNGO[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
-  const [activeNGOs, setActiveNGOs] = useState<ActiveNGO[]>([
-    {
-      id: 3,
-      name: "Clean Water Initiative",
-      cause: "Water Access",
-      donationsReceived: 10500,
-      updates: [{ usage: "2 Wells constructed", date: "2025-10-18" }],
-      email: "info@cleanwater.org",
-      status: "active"
-    },
-    {
-      id: 4,
-      name: "Education for All",
-      cause: "Education",
-      donationsReceived: 7500,
-      updates: [{ usage: "Distributed supplies to 100 students", date: "2025-10-17" }],
-      email: "contact@educationforall.org",
-      status: "active"
-    },
-    {
-      id: 5,
-      name: "Healthcare Access",
-      cause: "Health",
-      donationsReceived: 6000,
-      updates: [{ usage: "Hosted medical camp for 500 villagers", date: "2025-10-16" }],
-      email: "support@healthcareaccess.org",
-      status: "active"
-    },
-  ]);
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const result = await fetchPendingNgos();
+        console.log("Pending NGOs:", result);
+        const mappedNgos: PendingNGO[] = result.map((ngo: any) => ({
+          id: ngo._id,
+          name: ngo.name,
+          cause: ngo.cause,
+          submittedDate: ngo.submittedDate,
+          email: ngo.email,
+          totalDonations: ngo.totalDonations,
+          description: ngo.description,
+          registrationNumber: ngo.registrationNumber,
+          address: ngo.address,
+          status: ngo.status,
+        }));
 
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: 1,
-      name: "John Doe",
-      email: "john@example.com",
-      totalDonations: 2500,
-      donationCount: 8,
-      joinedDate: "2025-01-15",
-      status: "active",
-      badge: "Gold Supporter"
-    },
-    {
-      id: 2,
-      name: "Sarah Johnson",
-      email: "sarah@example.com",
-      totalDonations: 6000,
-      donationCount: 12,
-      joinedDate: "2024-11-20",
-      status: "active",
-      badge: "Platinum Supporter"
-    },
-    {
-      id: 3,
-      name: "Michael Brown",
-      email: "michael@example.com",
-      totalDonations: 450,
-      donationCount: 5,
-      joinedDate: "2025-03-10",
-      status: "active",
-      badge: "Silver Supporter"
-    },
-    {
-      id: 4,
-      name: "Emily Davis",
-      email: "emily@example.com",
-      totalDonations: 8500,
-      donationCount: 20,
-      joinedDate: "2024-09-05",
-      status: "active",
-      badge: "Platinum Supporter"
-    },
-  ]);
+        setPendingNGOs(mappedNgos);
 
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([
-    {
-      id: 1,
-      donor: "John Doe",
-      ngo: "Clean Water Initiative",
-      amount: 500,
-      date: "2025-10-18",
-      status: "Completed",
-      utilization: "Used for well construction",
-      category: "Water Access"
-    },
-    {
-      id: 2,
-      donor: "Sarah Johnson",
-      ngo: "Education for All",
-      amount: 1000,
-      date: "2025-10-18",
-      status: "Completed",
-      utilization: "Funds used for student supplies",
-      category: "Education"
-    },
-    {
-      id: 3,
-      donor: "Michael Brown",
-      ngo: "Healthcare Access",
-      amount: 250,
-      date: "2025-10-17",
-      status: "Completed",
-      utilization: "Medical camp",
-      category: "Health"
-    },
-    {
-      id: 4,
-      donor: "Emily Davis",
-      ngo: "Clean Water Initiative",
-      amount: 750,
-      date: "2025-10-17",
-      status: "Completed",
-      utilization: "Well construction phase 2",
-      category: "Water Access"
-    },
-  ]);
+        const result2 = await fetchApprovedNgos();
+
+        const mappedActiveNgos: ActiveNGO[] = result2.map((ngo: any) => ({
+          id: ngo._id,
+          name: ngo.name,
+          cause: ngo.cause,
+          donationsReceived: ngo.totalDonations ?? 0,
+          updates: ngo.updates ?? [], // default empty array if updates missing
+          email: ngo.email,
+          status: ngo.status,
+        }));
+
+        setActiveNGOs(mappedActiveNgos);
+
+        const result3 = await fetchAllUsers();
+        const mappedUsers: User[] = result3.map((user: any) => ({
+          id: user._id,
+          name: user.username || "",           // Map username to name
+          email: user.email,
+          totalDonations: user.totalDonations ?? 0,  // Default 0 if not present
+          donationCount: user.donationCount ?? 0,    // Default 0 if not present
+          joinedDate: user.createdAt || "",           // Use createdAt as joinedDate
+          status: user.status || "active",             // Default to active or empty
+          badge: user.badge || "",                      // Default empty badge
+        }));
+
+        setUsers(mappedUsers);
+
+      } catch (err) {
+        console.error("Error fetching NGOs:", err);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
 
   const recentActivities = [
     { id: 1, type: "donation", description: "John Doe donated $500 to Clean Water Initiative", time: "2 hours ago" },
@@ -242,33 +163,70 @@ export function AdminDashboard() {
   const totalUsers = users.length;
   const totalActiveNGOs = activeNGOs.length;
 
-  const handleApproveNGO = (ngo: PendingNGO) => {
-    const newActiveNGO: ActiveNGO = {
-      id: ngo.id,
-      name: ngo.name,
-      cause: ngo.cause,
-      donationsReceived: 0,
-      updates: [],
-      email: ngo.email,
-      status: "active"
-    };
-    setActiveNGOs([...activeNGOs, newActiveNGO]);
-    setPendingNGOs(pendingNGOs.filter(n => n.id !== ngo.id));
-    toast.success(`${ngo.name} has been approved!`);
+  const handleApproveNGO = async (ngo: PendingNGO) => {
+    try {
+      const result = await handleNgoApproval(ngo.id, "approve");
+      const newActiveNGO: ActiveNGO = {
+        id: ngo.id,
+        name: ngo.name,
+        cause: ngo.cause,
+        donationsReceived: 0,
+        updates: [],
+        email: ngo.email,
+        status: "approved"
+      };
+      setActiveNGOs([...activeNGOs, newActiveNGO]);
+      setPendingNGOs(pendingNGOs.filter(n => n.id !== ngo.id));
+      toast.success(`${ngo.name} has been approved!`);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const handleRejectNGO = (ngoId: number) => {
-    const ngo = pendingNGOs.find(n => n.id === ngoId);
-    setPendingNGOs(pendingNGOs.filter(n => n.id !== ngoId));
-    toast.error(`${ngo?.name} application has been rejected`);
+  const handleRejectNGO = async (ngoId: number) => {
+
+    try {
+      const result = await handleNgoApproval(ngoId, "reject");
+      const ngo = pendingNGOs.find(n => n.id === ngoId);
+      setPendingNGOs(pendingNGOs.filter(n => n.id !== ngoId));
+      toast.error(`${ngo?.name} application has been rejected`);
+    } catch (error) {
+
+    }
   };
 
-  const handleDeactivateNGO = (ngoId: number) => {
-    setActiveNGOs(activeNGOs.map(ngo =>
-      ngo.id === ngoId ? { ...ngo, status: "suspended" } : ngo
-    ));
-    toast.success("NGO has been suspended");
-    setIsEditDialogOpen(false);
+  const handleDeactivateNGO = async(ngoId: number) => {
+    try {
+      console.log(123);
+      
+      const result = await handleNgoApproval(ngoId, "suspend");
+      console.log(123);
+      
+      setActiveNGOs(activeNGOs.map(ngo =>
+        ngo.id === ngoId ? { ...ngo, status: "suspended" } : ngo
+      ));
+      toast.success("NGO has been suspended");
+      setIsEditDialogOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleReactivateNGO = async(ngoId: number) => {
+    try {
+      console.log(123);
+      
+      const result = await handleNgoApproval(ngoId, "approve");
+      console.log(123);
+      
+      setActiveNGOs(activeNGOs.map(ngo =>
+        ngo.id === ngoId ? { ...ngo, status: "approved" } : ngo
+      ));
+      toast.success("NGO has been Re activated");
+      setIsEditDialogOpen(false);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const handleSuspendUser = (userId: number) => {
@@ -328,6 +286,8 @@ export function AdminDashboard() {
               pendingNGOs={pendingNGOs}
               setIsViewDialogOpen={setIsViewDialogOpen}
               setSelectedNGO={setSelectedNGO}
+              handleApproveNGO={handleApproveNGO}
+              handleRejectNGO={handleRejectNGO}
             />
             <ActiveNgos
               activeNGOs={activeNGOs}
@@ -518,12 +478,12 @@ export function AdminDashboard() {
               </div>
               <div>
                 <Label className="text-sm text-gray-600 dark:text-gray-400">Total Donations</Label>
-                <p className="text-gray-900 dark:text-white mt-1">${selectedNGO.donationsReceived.toLocaleString()}</p>
+                {/* <p className="text-gray-900 dark:text-white mt-1">${selectedNGO.donationsReceived.toLocaleString()}</p> */}
               </div>
               <div>
                 <Label className="text-sm text-gray-600 dark:text-gray-400">Current Status</Label>
                 <Badge
-                  className={`mt-1 ${selectedNGO.status === "active"
+                  className={`mt-1 ${selectedNGO.status === "approved"
                     ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                     : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"}`}
                 >
@@ -531,7 +491,7 @@ export function AdminDashboard() {
                 </Badge>
               </div>
               <div className="pt-4">
-                {selectedNGO.status === "active" ? (
+                {selectedNGO.status === "approved" ? (
                   <Button
                     variant="outline"
                     className="w-full text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20 rounded-lg"
@@ -542,13 +502,7 @@ export function AdminDashboard() {
                 ) : (
                   <Button
                     className="w-full bg-green-600 hover:bg-green-700 rounded-lg"
-                    onClick={() => {
-                      setActiveNGOs(activeNGOs.map(ngo =>
-                        ngo.id === selectedNGO.id ? { ...ngo, status: "active" } : ngo
-                      ));
-                      toast.success("NGO reactivated successfully");
-                      setIsEditDialogOpen(false);
-                    }}
+                    onClick={() => handleReactivateNGO(selectedNGO.id)}
                   >
                     <UserCheck className="w-4 h-4 mr-2" />Reactivate NGO
                   </Button>

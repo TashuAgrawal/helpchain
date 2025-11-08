@@ -64,7 +64,7 @@ const ActiveNgos: React.FC<ActiveNgosProps> =  ({activeNGOs , setSelectedNGO , s
                                     <TableCell>
                                         <Badge
                                             variant="secondary"
-                                            className={ngo.status === "active"
+                                            className={ngo.status === "approved"
                                                 ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
                                                 : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"}
                                         >

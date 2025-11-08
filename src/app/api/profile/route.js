@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server';
 import { connectDB } from '@/app/lib/mongodb'; // Assuming this exports connectDB directly
 import { adminAuth } from '@/app/lib/firebaseAdmin'; // Assuming this exports adminAuth
 import User from '@/app/lib/models/User';
+import NGO from '@/app/lib/models/NGO';
 
 // Helper function to handle GET requests
 export async function GET(request) {
@@ -46,12 +47,16 @@ console.log("hello");
 
         // 4. Find the user profile in MongoDB (excluding the password hash)
         // Finding by email is robust as it's a field present in both Firebase and MongoDB.
-        const userProfile = await User.findOne({ _id: user_id }).select('-password -__v'); 
+        let userProfile = await User.findOne({ _id: user_id }).select('-password -__v'); 
         console.log(userProfile);
         
         if (!userProfile) {
+            userProfile = await NGO.findOne({ _id: user_id }).select('-password -__v');
+            if(!userProfile)
             // Note: If the user exists in Firebase but not MongoDB, return 404
-            return NextResponse.json({ message: "User profile not found in database." }, { status: 404 });
+            {
+                return NextResponse.json({ message: "User profile not found in database." }, { status: 404 });
+            }
         }
 
         console.log({

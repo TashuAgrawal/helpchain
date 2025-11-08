@@ -4,7 +4,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Badge } from '../../ui/badge'
 import { Button } from '../../ui/button'
 import { Check, Eye, X } from 'lucide-react'
-import { log } from 'console'
 
 interface PendingNGO {
   id: number;
@@ -30,21 +29,21 @@ interface ActiveNGO {
 }
 
 interface PendingApprovalsProps {
-  pendingNGOs: PendingNGO[]
-  setIsViewDialogOpen: (open: boolean) => void
-  setSelectedNGO: React.Dispatch<React.SetStateAction<PendingNGO | ActiveNGO | null>>
+  pendingNGOs: PendingNGO[];
+  setIsViewDialogOpen: (open: boolean) => void;
+  setSelectedNGO: React.Dispatch<React.SetStateAction<PendingNGO | ActiveNGO | null>>;
+  handleApproveNGO: (ngo: PendingNGO) => Promise<void>;
+  handleRejectNGO: (ngoId: number) => Promise<void>;
 }
 
-const PendingApprovals: React.FC<PendingApprovalsProps> = ({ pendingNGOs, setIsViewDialogOpen, setSelectedNGO }) => {
 
-  const handleApproveNGO = () => {
-    console.log("Ngo Approved");
-  }
-
-  const handleRejectNGO = () => {
-    console.log("Ngo Rejected");
-  }
-
+const PendingApprovals: React.FC<PendingApprovalsProps> = ({
+  pendingNGOs,
+  setIsViewDialogOpen,
+  setSelectedNGO,
+  handleApproveNGO,
+  handleRejectNGO,
+}) => {
   return (
     <Card className="rounded-xl border-none shadow-sm bg-white dark:bg-gray-800 transition-colors duration-300">
       <CardHeader>
@@ -89,7 +88,7 @@ const PendingApprovals: React.FC<PendingApprovalsProps> = ({ pendingNGOs, setIsV
                     <Button
                       size="sm"
                       className="bg-green-600 hover:bg-green-700 gap-1 rounded-lg"
-                      onClick={() => handleApproveNGO()}
+                      onClick={() => handleApproveNGO(ngo)}
                     >
                       <Check className="w-4 h-4" />Approve
                     </Button>
@@ -97,7 +96,7 @@ const PendingApprovals: React.FC<PendingApprovalsProps> = ({ pendingNGOs, setIsV
                       size="sm"
                       variant="outline"
                       className="gap-1 rounded-lg text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20"
-                      onClick={() => handleRejectNGO()}
+                      onClick={() => handleRejectNGO(ngo.id)}
                     >
                       <X className="w-4 h-4" />Reject
                     </Button>
@@ -116,7 +115,7 @@ const PendingApprovals: React.FC<PendingApprovalsProps> = ({ pendingNGOs, setIsV
         </Table>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
 export default PendingApprovals

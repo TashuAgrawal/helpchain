@@ -31,11 +31,11 @@ interface AuthContextType {
   currentUser: EnrichedUser | null;
   loading: boolean;
   error: string | null;
-  signUp: (params: { email: string; username: string; password: string; role:string }) => Promise<{
+  signUp: (params: { email: string; username: string; password: string; role: string }) => Promise<{
     success: boolean;
     message?: string;
   }>;
-  login: (params: { email: string; password: string }) => Promise<{
+  login: (params: { email: string; password: string, role: string }) => Promise<{
     success: boolean;
     message?: string;
   }>;
@@ -56,7 +56,7 @@ const initialContextValue: AuthContextType = {
   error: null,
   signUp: async () => ({ success: false, message: "Auth not initialized." }),
   login: async () => ({ success: false, message: "Auth not initialized." }),
-  signOut: async () => {},
+  signOut: async () => { },
 };
 
 // ---------------------------------------------------
@@ -149,39 +149,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     return () => unsubscribe();
   }, [auth, enrichUserProfile]);
-
-  // ---------------------------------------------------
-  // SIGN UP
-  // ---------------------------------------------------
+  // inside AuthProvider component
 
   const signUp = useCallback(
-    async ({
-      email,
-      username,
-      password,
-      role,
-    }: {
-      email: string;
-      username: string;
-      password: string;
-      role:string;
-    }) => {
+    async ({ email, username, password, role }: { email: string; username: string; password: string; role: string }) => {
       setError(null);
       setLoading(true);
 
       try {
         if (!auth) throw new Error("Authentication not initialized.");
 
-        const response = await axios.post("/api/auth/signup", {
-          email,
-          username,
-          password,
-          role,
-        });
+        let response;
 
-        if (response.status === 201 && response.data.customToken) {
+        if (role === "user" || role === "admin") {
+          // Call existing auth API for users/admins
+          response = await axios.post("/api/auth/signup", {
+            email,
+            username,
+            password,
+            role,
+          });
+        } else if (role === "ngo") {
+          // Call NGO signup API which accepts name, email, password
+          response = await axios.post("/api/ngo/signup", {
+            name: username, // assuming username is NGO name here
+            email,
+            password,
+          });
+        } else {
+          return { success: false, message: "Invalid role specified." };
+        }
+
+        // For NGO signup, you may need a second step to sign in after approval,
+        // so here let's assume signup response for NGOs doesn't issue token immediately.
+        if ((role === "user" || role === "admin") && response.status === 201 && response.data.customToken) {
           await signInWithCustomToken(auth, response.data.customToken);
           return { success: true };
+        } else if (role === "ngo" && response.status === 201) {
+          return { success: true, message: "NGO registered successfully. Await admin approval." };
         }
 
         return {
@@ -202,31 +207,36 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     [auth]
   );
 
-  // ---------------------------------------------------
-  // LOGIN
-  // ---------------------------------------------------
 
   const login = useCallback(
-    async ({ email, password }: { email: string; password: string }) => {
+    async ({ email, password, role }: { email: string; password: string, role: string }) => {
       setError(null);
       setLoading(true);
 
       try {
         if (!auth) throw new Error("Authentication not initialized.");
 
-        const response = await axios.post("/api/auth/login", {
-          email,
-          password,
-        });
+        let response;
 
-        if (response.status === 200 && response.data.customToken) {
-          await signInWithCustomToken(auth, response.data.customToken);
-          return { success: true };
+        if (role != "ngo") {
+          response = await axios.post("/api/auth/login", { email, password });
+
+          if (response.status === 200 && response.data.customToken) {
+            await signInWithCustomToken(auth, response.data.customToken);
+            return { success: true };
+          }
+        } else {
+          response = await axios.post("/api/ngo/signin", { email, password });
+
+          if (response.status === 200 && response.data.customToken) {
+            await signInWithCustomToken(auth, response.data.customToken);
+            return { success: true };
+          }
         }
 
         return {
           success: false,
-          message: response.data.message || "Login failed. Check credentials.",
+          message: response.data.message || "Login failed. Check credentials or approval status.",
         };
       } catch (err: any) {
         const errorMessage =
@@ -241,6 +251,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     },
     [auth]
   );
+
+
 
   // ---------------------------------------------------
   // SIGN OUT

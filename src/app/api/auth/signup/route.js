@@ -1,9 +1,7 @@
-// src/app/api/auth/route.js
-
 import { NextResponse } from "next/server";
 import { connectDB } from "@/app/lib/mongodb";
 import User from "@/app/lib/models/User";
-import { adminAuth } from "@/app/lib/firebaseAdmin"; // <-- Import the Admin SDK
+import { adminAuth } from "@/app/lib/firebaseAdmin"; // Import Firebase Admin SDK
 
 /**
  * Handles POST requests for user registration (Sign Up).
@@ -12,39 +10,41 @@ export async function POST(request) {
   try {
     await connectDB();
     
-    const { email, username, password , role } = await request.json();
-    console.log(email , username , password , role);
-    
+    const { email, username, password, role } = await request.json();
+
     if (!email || !username || !password || !role) {
       return NextResponse.json({ message: "Missing required fields." }, { status: 400 });
     }
 
-    // 1. Check if user already exists
-    const existingUser = await User.findOne({ email });
+    // Validate role for only user and admin
+    const validRoles = ['user', 'admin'];
+    if (!validRoles.includes(role)) {
+      return NextResponse.json({ message: "Invalid role specified." }, { status: 400 });
+    }
 
-    console.log(existingUser);
-    
+    // Check if user exists by email or username
+    const existingUser = await User.findOne({ 
+      $or: [{ email }, { username }] 
+    });
+
     if (existingUser) {
       return NextResponse.json({ message: "User with this email or username already exists." }, { status: 409 });
     }
-    console.log("Heyy");
-    // 2. Create the new user in MongoDB
-    const newUser = await User.create({ email, username, password,role });
+
+    // Create the new user
+    const newUser = await User.create({ email, username, password, role });
     
-    // 3. Generate a Custom Token using the Firebase Admin SDK
-    //    We use the MongoDB _id as the unique identifier (uid) for Firebase.
+    // Generate a Firebase Custom Token using the MongoDB _id as uid
     const firebaseUid = newUser._id.toString();
     const customToken = await adminAuth.createCustomToken(firebaseUid, {
-        // Optional: Add custom claims for roles/permissions
-        role: newUser.role,
-        mongoId: firebaseUid
+      role: newUser.role,
+      mongoId: firebaseUid
     });
 
-    // 4. Return the custom token to the client
     return NextResponse.json({ 
       message: "User registered successfully", 
-      userId: firebaseUid, // Using the MongoDB ID as the common identifier
-      customToken: customToken // <-- CRITICAL: The token for the client to sign in
+      userId: firebaseUid,
+      customToken: customToken
     }, { status: 201 });
 
   } catch (error) {

@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from "bcryptjs"; // Import bcrypt for hashing
 
-// Define the schema for a User
+// Define the schema for a User (only 'user' and 'admin' roles)
 const UserSchema = new Schema({
   email: { 
     type: String, 
@@ -20,25 +20,23 @@ const UserSchema = new Schema({
     unique: true,
     required: [true, 'Username is required'],
   },
-  // Role for 'Helpchain' (e.g., 'user', 'admin')
+  // Only user and admin roles
   role: {
     type: String,
-    enum: ['user', 'admin','ngo'], 
+    enum: ['user', 'admin'], 
     default: 'user',
-  },
+  }
 }, { 
   timestamps: true // Adds createdAt and updatedAt fields
 });
 
 // PRE-SAVE HOOK: Hash the password before saving a new User or if the password field is modified
 UserSchema.pre('save', async function (next) {
-  // Only hash the password if it is new or has been modified
   if (!this.isModified('password')) {
     return next();
   }
 
   try {
-    // Generate a salt and hash the password
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
@@ -49,10 +47,10 @@ UserSchema.pre('save', async function (next) {
 
 // METHOD: Add a method to compare passwords (used during login)
 UserSchema.methods.comparePassword = async function (candidatePassword) {
-    return bcrypt.compare(candidatePassword, this.password);
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Check if the model already exists to prevent Mongoose redifinition errors
+// Check if the model already exists to prevent Mongoose redefinition errors
 const User = mongoose.models.User || mongoose.model('User', UserSchema);
 
 export default User;
