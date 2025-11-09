@@ -11,7 +11,7 @@ export async function POST(request) {
     const { donor, ngo, amount, date, status, utilization, category } = await request.json();
 
     // Basic validation
-    if (!donor || !ngo || !amount || !date || !status || !utilization || !category) {
+    if (!donor || !ngo || !amount ) {
       return NextResponse.json({ message: "All fields are required." }, { status: 400 });
     }
 
@@ -19,7 +19,6 @@ export async function POST(request) {
       donor,
       ngo,
       amount,
-      date: new Date(date),
       status,
       utilization,
       category,

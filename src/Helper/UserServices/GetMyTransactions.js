@@ -1,6 +1,6 @@
 import axios from "axios";
 
-async function fetchUserTransactionsById(userId) {
+async function fetchUserTransactionsById(userId){
   try {
     const response = await axios.get(`/api/transactions/user/${userId}`);
 

@@ -12,7 +12,7 @@ export async function GET(request, { params }) {
   try {
     await connectDB();
 
-    const { userId } = params;
+    const { userId } = await params;
 
     if (!userId) {
       return NextResponse.json({ message: "User ID is required." }, { status: 400 });

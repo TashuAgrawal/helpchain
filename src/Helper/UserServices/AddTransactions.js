@@ -1,6 +1,6 @@
 import axios from "axios";
 
-async function addTransaction(transactionData, adminToken) {
+async function addTransaction(transactionData) {
   try {
     const response = await axios.post("/api/transactions/add", transactionData);
     if (response.status === 201) {

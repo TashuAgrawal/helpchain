@@ -17,6 +17,9 @@ import fetchAllCampaigns from "@/Helper/UserServices/GetAllCampaigns"
 import fetchApprovedNgos from "@/Helper/AdminServices/Approvedngos"
 import postCommunityProblem from "@/Helper/UserServices/PostProblem"
 import fetchAllCommunityProblems from "@/Helper/NgoServices/GetAllProblems"
+import toggleBookmark from "@/Helper/UserServices/ToggleBookmark"
+import addTransaction from "@/Helper/UserServices/AddTransactions"
+import fetchUserTransactionsById from "@/Helper/UserServices/GetMyTransactions"
 
 const userBadgesList: UserBadge[] = [
   {
@@ -76,14 +79,24 @@ const UserDashboard = () => {
   const [donationGoalAmount, setDonationGoalAmount] = useState("");
   const [donationGoalDeadline, setDonationGoalDeadline] = useState("");
   const [activeNGOs, setActiveNGOs] = useState<NGO[]>([]);
-  const [ngos, setNGOs] = useState<NGO[]>([]);
   const [communityProblems, setCommunityProblems] = useState<CommunityProblem[]>([]);
+  const [myDonations, setMyDonations] = useState<MyDonation[]>([]);
+  const totalDonated = myDonations.reduce((sum, d) => sum + d.amount, 0);
+  const earnedBadges = userBadgesList.filter((b) => totalDonated >= b.threshold);
+  const favoriteNGOs = activeNGOs.filter(ngo => ngo.isFavorite);
 
   useEffect(() => {
     async function fetchData() {
       try {
+
+        let userId;
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const userObj = JSON.parse(userStr);
+          userId = userObj?.user.mongoId;
+        }
+
         const result = await fetchApprovedNgos();
-        console.log(result);
         const mappedActiveNgos: NGO[] = result.map((ngo: any) => ({
           id: ngo._id,
           name: ngo.name,
@@ -96,11 +109,8 @@ const UserDashboard = () => {
           isFavorite: false,
           description: ngo.description
         }));
-
         setActiveNGOs(mappedActiveNgos);
         const result2 = await fetchAllCommunityProblems();
-        console.log(result2);
-
         const mappedProblems: CommunityProblem[] = result2.map((problem: any) => ({
           id: problem._id,
           title: problem.title,
@@ -113,8 +123,22 @@ const UserDashboard = () => {
           upvotes: problem.upvotes,
           userVoted: problem.userVoted,
         }));
-
         setCommunityProblems(mappedProblems);
+
+        const result3 = await fetchUserTransactionsById(userId);
+        console.log(result3);
+        const mappedTransactions: MyDonation[] = result3.map((txn:any) => ({
+          id: txn._id, 
+          ngoName: "<Fetch NGO Name>",
+          amount: txn.amount,
+          date: txn.date,
+          status: "completed",       
+          category: "<Fetch Category>", 
+          impact: undefined,         
+        }));
+
+        setMyDonations(mappedTransactions)
+
 
       } catch (err) {
         console.error("Error fetching NGOs:", err);
@@ -125,23 +149,7 @@ const UserDashboard = () => {
 
 
 
-  const [myDonations, setMyDonations] = useState<MyDonation[]>([
-    { id: 1, ngoName: "Clean Water Initiative", amount: 500, date: "2025-10-01", status: "Impact Reported", impact: "Helped build 0.5 wells", category: "Water & Sanitation" },
-    { id: 2, ngoName: "Education for All", amount: 1000, date: "2025-09-15", status: "Impact Reported", impact: "Provided supplies for 10 students", category: "Education" },
-    // ... other donations
-  ]);
-
-  // Derived State
-  const totalDonated = myDonations.reduce((sum, d) => sum + d.amount, 0);
-  const earnedBadges = userBadgesList.filter((b) => totalDonated >= b.threshold);
-  const favoriteNGOs = ngos.filter(ngo => ngo.isFavorite);
-
-  const filteredNGOs = ngos.filter(ngo => {
-    const matchesSearch = ngo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      ngo.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || ngo.cause === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
+  
 
   const navLinks = [
     { label: "Explore NGOs", href: "#explore" },
@@ -149,34 +157,56 @@ const UserDashboard = () => {
     { label: "Community", href: "#community" },
     { label: "My Impact", href: "#impact" },
   ];
-
-  // --- Handlers ---
-
   const handleDonateClick = (ngo: NGO) => {
     setSelectedNGO(ngo);
     setIsDonateDialogOpen(true);
   };
 
   const handleSetRecurringClick = () => {
-    // selectedNGO is already set from handleDonateClick
     setIsDonateDialogOpen(false);
     setIsRecurringDialogOpen(true);
   };
 
-  const handleDonate = () => {
+  const handleDonate = async () => {
     if (!donationAmount || parseFloat(donationAmount) <= 0) {
       toast.error("Please enter a valid donation amount");
       return;
     }
-    const newDonation: MyDonation = {
-      id: myDonations.length + 1,
-      ngoName: selectedNGO?.name || "",
-      amount: parseFloat(donationAmount),
-      date: new Date().toISOString().split('T')[0],
-      status: "Processing",
-      category: selectedNGO?.cause || ""
-    };
-    setMyDonations([newDonation, ...myDonations]);
+
+    console.log(selectedNGO);
+
+    try {
+      let userId;
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const userObj = JSON.parse(userStr);
+        userId = userObj?.user.mongoId;
+      }
+
+      const result = await addTransaction({
+        donor: userId,
+        ngo: selectedNGO?.id,
+        amount: parseInt(donationAmount),
+      })
+
+      console.log(result);
+      const mappedDonation: MyDonation = {
+        id: result.transaction._id,
+        ngoName: selectedNGO?.name || "",
+        amount: result.transaction.amount,
+        date: result.transaction.date,
+        status: "completed",
+        category: "",
+        impact: undefined,
+      };
+
+
+      setMyDonations([mappedDonation, ...myDonations]);
+
+
+    } catch (error) {
+
+    }
     toast.success(`Successfully donated $${donationAmount} to ${selectedNGO?.name}!`);
     setIsDonateDialogOpen(false);
     setDonationAmount("");
@@ -193,12 +223,25 @@ const UserDashboard = () => {
     setDonationAmount("");
   };
 
-  const handleToggleFavorite = (ngoId: string) => {
-    setNGOs(ngos.map(ngo =>
-      ngo.id === ngoId ? { ...ngo, isFavorite: !ngo.isFavorite } : ngo
-    ));
-    const ngo = ngos.find(n => n.id === ngoId);
-    toast.success(ngo?.isFavorite ? "Removed from favorites" : "Added to favorites");
+  const handleToggleFavorite = async (ngoId: string) => {
+    try {
+
+      let userId;
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const userObj = JSON.parse(userStr);
+        userId = userObj?.user.mongoId;
+      }
+      const result = await toggleBookmark(userId, ngoId);
+      console.log(result);
+      setActiveNGOs((prevNgos) =>
+        prevNgos.map((ngo) =>
+          ngo.id === ngoId ? { ...ngo, isFavorite: result.bookmarked } : ngo
+        )
+      );
+    } catch (error) {
+
+    }
   };
 
   const handlePostProblem = async () => {
@@ -212,11 +255,18 @@ const UserDashboard = () => {
       return;
     }
 
+    let userId;
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const userObj = JSON.parse(userStr);
+      userId = userObj?.user.mongoId;
+    }
+
     const newProblem: Omit<CommunityProblem, "id"> = {
       title: newProblemTitle,
       description: newProblemDescription,
       category: newProblemCategory,
-      postedBy: "You", // Replace with actual user if available
+      postedBy: userId,
       date: new Date().toISOString(),
       location: newProblemLocation,
       responses: 0,
@@ -226,9 +276,6 @@ const UserDashboard = () => {
 
     try {
       const savedProblem = await postCommunityProblem(newProblem);
-
-      console.log(savedProblem.problem);
-
       const mappedProblem: CommunityProblem = {
         id: savedProblem.problem._id,
         title: savedProblem.problem.title,
@@ -241,7 +288,6 @@ const UserDashboard = () => {
         upvotes: savedProblem.problem.upvotes,
         userVoted: savedProblem.problem.userVoted,
       };
-
       setCommunityProblems([mappedProblem, ...communityProblems]);
       toast.success("Problem posted successfully! NGOs can now respond.");
       setIsProblemDialogOpen(false);
@@ -254,7 +300,6 @@ const UserDashboard = () => {
       toast.error("Failed to post problem. Please try again.");
     }
   };
-
 
   const handleVoteProblem = (problemId: string) => {
     setCommunityProblems(communityProblems.map(p =>
@@ -352,10 +397,6 @@ const UserDashboard = () => {
           </TabsContent>
         </Tabs>
       </main>
-
-      {/* --- All Dialogs --- */}
-      {/* They live here at the top level, controlled by state */}
-
       <DonateDialog
         isOpen={isDonateDialogOpen}
         onOpenChange={setIsDonateDialogOpen}

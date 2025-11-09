@@ -18,24 +18,22 @@ const TransactionSchema = new Schema({
   date: {
     type: Date,
     required: true,
+    default:Date.now
   },
   status: {
     type: String,
-    required: true,
     trim: true,
   },
   utilization: {
     type: String,
-    required: true,
     trim: true,
   },
   category: {
     type: String,
-    required: true,
     trim: true,
   },
 }, {
-  timestamps: true, // adds createdAt and updatedAt fields
+  timestamps: true,
 });
 
 const Transaction = mongoose.models.Transaction || mongoose.model("Transaction", TransactionSchema);
