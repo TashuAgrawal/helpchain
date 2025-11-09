@@ -10,7 +10,7 @@ import { CommunityProblem } from '../types';
 interface CommunityTabProps {
   communityProblems: CommunityProblem[];
   setIsProblemDialogOpen: (open: boolean) => void;
-  handleVoteProblem: (id: number) => void;
+  handleVoteProblem: (id: string) => void;
 }
 
 export function CommunityTab({

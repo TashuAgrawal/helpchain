@@ -109,6 +109,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             Authorization: `Bearer ${token}`,
           },
         });
+        localStorage.setItem("user" , JSON.stringify(response?.data));
 
         if (response.status === 200 && response.data.user) {
           return { ...firebaseUser, ...response.data.user };

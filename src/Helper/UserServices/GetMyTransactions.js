@@ -1,12 +1,8 @@
 import axios from "axios";
 
-async function fetchUserTransactionsById(userId, authToken) {
+async function fetchUserTransactionsById(userId) {
   try {
-    const response = await axios.get(`/api/transactions/user/${userId}`, {
-      headers: {
-        Authorization: `Bearer ${authToken}`,
-      },
-    });
+    const response = await axios.get(`/api/transactions/user/${userId}`);
 
     if (response.status === 200) {
       return response.data;

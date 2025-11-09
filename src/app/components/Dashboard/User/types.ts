@@ -10,21 +10,35 @@ export interface UserBadge {
   colorClass: string;
 }
 
+// export interface NGO {
+//   id: number;
+//   name: string;
+//   cause: string;
+//   description: string;
+//   goal: number;
+//   raised: number;
+  // image: string;
+//   lastUpdate: string;
+//   transparency: string;
+//   transparencyScore: number;
+//   donors: number;
+//   verified: boolean;
+//   isFavorite?: boolean;
+// }
+
 export interface NGO {
-  id: number;
+  id: string;                
   name: string;
   cause: string;
+  email: string;
+  totalDonations: number;
   description: string;
-  goal: number;
-  raised: number;
-  image: string;
-  lastUpdate: string;
-  transparency: string;
-  transparencyScore: number;
-  donors: number;
-  verified: boolean;
-  isFavorite?: boolean;
+  address: string;
+  createdAt: string;
+  image?: string;           
+  isFavorite?: boolean;      
 }
+
 
 export interface MyDonation {
   id: number;
@@ -37,7 +51,7 @@ export interface MyDonation {
 }
 
 export interface CommunityProblem {
-  id: number;
+  id: string;
   title: string;
   description: string;
   category: string;

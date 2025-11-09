@@ -1,7 +1,7 @@
 // src/app/components/ngo-dashboard/types.ts
 
 export interface Campaign {
-  id: number;
+  id: string;
   title: string;
   goal: number;
   raised: number;
@@ -11,6 +11,7 @@ export interface Campaign {
   description?: string;
   startDate: string;
   endDate?: string;
+  ngoId:string;
 }
 
 export interface Donation {

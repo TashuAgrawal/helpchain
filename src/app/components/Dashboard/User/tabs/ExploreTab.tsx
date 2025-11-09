@@ -20,7 +20,7 @@ interface ExploreTabProps {
   compareNGOs: NGO[];
   setIsCompareDialogOpen: (open: boolean) => void;
   onDonate: (ngo: NGO) => void;
-  onToggleFavorite: (id: number) => void;
+  onToggleFavorite: (id: string) => void;
   onAddToCompare: (ngo: NGO) => void;
 }
 

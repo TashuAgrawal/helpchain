@@ -19,7 +19,7 @@ interface CampaignsTabProps {
   selectedCampaign: Campaign | null;
   setSelectedCampaign: (campaign: Campaign | null) => void;
   handleEditCampaign: () => void;
-  handleDeleteCampaign: (id: number) => void;
+  handleDeleteCampaign: (id: string) => void;
 }
 
 export function CampaignsTab({

@@ -1,6 +1,6 @@
 // src/app/components/ngo-dashboard/NGODashboard.tsx
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../ui/tabs";
 import { NgoNavbar } from "@/app/components/Navbar/NgoNavbar/NgoNavbar";
@@ -10,6 +10,9 @@ import { CampaignsTab } from "./CampaignsTab";
 import { DonorsTab } from "./DonorsTab";
 import { CommunityTab } from "./CommunityTab";
 import { AnalyticsTab } from "./AnalyticsTab";
+import addCampaign from "@/Helper/NgoServices/AddCampaign"
+import fetchCampaignsByNgo from "@/Helper/NgoServices/GetMyCampaign"
+
 export function NGODashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isNewCampaignOpen, setIsNewCampaignOpen] = useState(false);
@@ -33,32 +36,46 @@ export function NGODashboard() {
   const [newUpdateDescription, setNewUpdateDescription] = useState("");
   const [donationFilter, setDonationFilter] = useState("all");
   const [dateRange, setDateRange] = useState("month");
-  const [campaigns, setCampaigns] = useState<Campaign[]>([
-    {
-      id: 1,
-      title: "Clean Water Initiative - Phase 2",
-      goal: 50000,
-      raised: 38500,
-      donors: 124,
-      status: "Active",
-      lastUpdate: "2 wells completed using $15,000",
-      description: "Building wells to provide clean drinking water to rural communities",
-      startDate: "2025-09-01",
-      endDate: "2025-12-31"
-    },
-    {
-      id: 2,
-      title: "Emergency Medical Supplies",
-      goal: 25000,
-      raised: 25000,
-      donors: 89,
-      status: "Completed",
-      lastUpdate: "Medicines distributed to 300 families",
-      description: "Emergency medical supplies for disaster-affected areas",
-      startDate: "2025-08-01",
-      endDate: "2025-10-15"
-    },
-  ]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        let ngoId;
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const userObj = JSON.parse(userStr);
+          console.log(userObj);
+          ngoId = userObj?.user.mongoId;
+        }
+        const result = await fetchCampaignsByNgo(ngoId);
+        console.log(result);
+        const mappedCampaigns: Campaign[] = result.map((item: any) => ({
+          id: item._id,
+          title: item.title,
+          goal: item.goal,
+          raised: item.raised,
+          donors: item.donors,
+          status: item.status,
+          lastUpdate: item.lastUpdate,
+          description: item.description,
+          startDate: item.startDate,
+          ngoId: item.ngoId,
+          endDate: item.endDate,
+        }));
+
+        setCampaigns(mappedCampaigns);
+
+        console.log(mappedCampaigns);
+
+
+      } catch (err) {
+        console.error("Error fetching NGOs:", err);
+      }
+    }
+    fetchData();
+  }, []);
 
   const [recentDonations, setRecentDonations] = useState<Donation[]>([
     { id: 1, donor: "Anonymous", amount: 500, date: "2025-10-18", message: "Great work!", anonymous: true },
@@ -145,14 +162,21 @@ export function NGODashboard() {
     { label: "Community", href: "#community" },
     { label: "Analytics", href: "#analytics" },
   ];
-  const handleCreateCampaign = () => {
+  const handleCreateCampaign = async () => {
     if (!newCampaignTitle || !newCampaignGoal) {
       toast.error("Please fill in all required fields");
       return;
     }
-    
+
+    let ngoId;
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const userObj = JSON.parse(userStr);
+      ngoId = userObj?.user.mongoId;
+    }
+
     const newCampaign: Campaign = {
-      id: campaigns.length + 1,
+      id: "",
       title: newCampaignTitle,
       goal: parseInt(newCampaignGoal),
       raised: 0,
@@ -160,10 +184,40 @@ export function NGODashboard() {
       status: "Active",
       lastUpdate: "Campaign just started!",
       description: newCampaignDescription,
-      startDate: new Date().toISOString().split('T')[0]
+      startDate: new Date().toISOString().split('T')[0],
+      ngoId: ngoId
     };
-    
-    setCampaigns([...campaigns, newCampaign]);
+
+
+
+
+    console.log(newCampaign, ngoId);
+
+
+    try {
+      const result = await addCampaign(newCampaign);
+      console.log(result);
+
+      const mappedCampaigns= {
+        id: result.campaign._id,
+        title: result.campaign.title,
+        goal: result.campaign.goal,
+        raised: result.campaign.raised,
+        donors: result.campaign.donors,
+        status: result.campaign.status,
+        lastUpdate: result.campaign.lastUpdate,
+        description: result.campaign.description,
+        startDate: result.campaign.startDate,
+        ngoId: result.campaign.ngoId,
+        endDate: result.campaign.endDate,
+      };
+      setCampaigns([...campaigns, mappedCampaigns]);
+
+    } catch (error) {
+      console.log(error);
+      
+    }
+
     toast.success("Campaign created successfully!");
     setIsNewCampaignOpen(false);
     setNewCampaignTitle("");
@@ -172,15 +226,15 @@ export function NGODashboard() {
   };
   const handleEditCampaign = () => {
     if (!selectedCampaign) return;
-    
-    setCampaigns(campaigns.map(c => 
+
+    setCampaigns(campaigns.map(c =>
       c.id === selectedCampaign.id ? selectedCampaign : c
     ));
     toast.success("Campaign updated successfully!");
     setIsEditCampaignOpen(false);
     setSelectedCampaign(null);
   };
-  const handleDeleteCampaign = (id: number) => {
+  const handleDeleteCampaign = (id: string) => {
     setCampaigns(campaigns.filter(c => c.id !== id));
     toast.success("Campaign deleted successfully!");
   };
@@ -205,7 +259,7 @@ export function NGODashboard() {
   };
   const handleEditUpdate = () => {
     if (!selectedUpdate) return;
-    setImpactUpdates(impactUpdates.map(u => 
+    setImpactUpdates(impactUpdates.map(u =>
       u.id === selectedUpdate.id ? selectedUpdate : u
     ));
     toast.success("Update edited successfully!");
@@ -217,7 +271,7 @@ export function NGODashboard() {
     toast.success("Update deleted successfully!");
   };
   const handleRespondToProblem = (problemId: number) => {
-    setCommunityProblems(communityProblems.map(p => 
+    setCommunityProblems(communityProblems.map(p =>
       p.id === problemId ? { ...p, responded: true } : p
     ));
     toast.success("Response submitted successfully!");
@@ -225,7 +279,7 @@ export function NGODashboard() {
     setSelectedProblem(null);
   };
   const handleReplyToFeedback = (feedbackId: number) => {
-    setDonorFeedback(donorFeedback.map(f => 
+    setDonorFeedback(donorFeedback.map(f =>
       f.id === feedbackId ? { ...f, replied: true } : f
     ));
     toast.success("Reply sent successfully!");
