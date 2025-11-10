@@ -1,18 +1,16 @@
 import axios from "axios";
 
-async function upvoteCommunityProblem(problemId, authToken) {
+async function toggleProblemUpvote(userId, problemId) {
   try {
-    const response = await axios.post("/api/community-problems/upvote", { problemId });
-
-    if (response.status === 200) {
-      return response.data;
-    } else {
-      throw new Error(response.data.message || "Failed to upvote community problem");
-    }
+    const response = await axios.post("/api/community-problems/upvote/toggle", {
+      userId,
+      problemId,
+    });
+    return response.data; 
   } catch (error) {
-    console.error("Error upvoting community problem:", error);
+    console.error("Failed to toggle upvote:", error);
     throw error;
   }
 }
 
-export default upvoteCommunityProblem;
+export default toggleProblemUpvote;

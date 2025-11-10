@@ -4,10 +4,6 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/app/lib/mongodb";
 import Transaction from "@/app/lib/models/Transaction";
 
-/**
- * GET /api/transactions/user/:userId
- * Returns all transactions for the given userId.
- */
 export async function GET(request, { params }) {
   try {
     await connectDB();
@@ -17,8 +13,6 @@ export async function GET(request, { params }) {
     if (!userId) {
       return NextResponse.json({ message: "User ID is required." }, { status: 400 });
     }
-
-    // Assuming `donor` field stores userId or you may need to change accordingly
     const userTransactions = await Transaction.find({ donor: userId }).sort({ date: -1 });
 
     return NextResponse.json(userTransactions, { status: 200 });

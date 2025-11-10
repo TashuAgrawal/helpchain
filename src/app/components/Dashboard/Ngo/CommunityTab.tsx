@@ -15,9 +15,9 @@ interface CommunityTabProps {
   communityProblems: CommunityProblem[];
   isResponseDialogOpen: boolean;
   setIsResponseDialogOpen: (open: boolean) => void;
-  selectedProblem: number | null;
-  setSelectedProblem: (id: number | null) => void;
-  handleRespondToProblem: (id: number) => void;
+  selectedProblem: string | null;
+  setSelectedProblem: (id: string | null) => void;
+  handleRespondToProblem: (id: string) => void;
 }
 
 export function CommunityTab({
@@ -36,7 +36,6 @@ export function CommunityTab({
 
       <div className="space-y-4">
         {communityProblems
-          .filter((p) => p.relevantToUs)
           .map((problem) => (
             <Card key={problem.id} className="rounded-xl border-none shadow-sm border-l-4 border-l-teal-500 dark:border-l-teal-400 bg-white dark:bg-gray-800 transition-colors duration-300">
               <CardHeader>
@@ -53,12 +52,12 @@ export function CommunityTab({
                       <span className="text-sm text-gray-500 dark:text-gray-400">{problem.location}</span>
                       <span className="text-sm text-gray-500 dark:text-gray-400">Posted by {problem.postedBy}</span>
                       <span className="text-sm text-gray-500 dark:text-gray-400">{problem.date}</span>
-                      {problem.responded && (
+                      {/* {problem.responded && (
                         <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
                           <CheckCircle className="w-3 h-3 mr-1" />
                           Responded
                         </Badge>
-                      )}
+                      )} */}
                     </div>
                     <CardDescription className="dark:text-gray-300">{problem.description}</CardDescription>
                   </div>
@@ -73,13 +72,14 @@ export function CommunityTab({
                   }}
                 >
                   <DialogTrigger asChild>
-                    <Button
+                    {/* <Button
                       onClick={() => setSelectedProblem(problem.id)}
                       className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 rounded-lg"
                       disabled={problem.responded}
                     >
                       {problem.responded ? "Response Submitted" : "Propose Solution"}
-                    </Button>
+                    </Button> */}
+                    <></>
                   </DialogTrigger>
                   <DialogContent className="rounded-xl dark:bg-gray-800 dark:border-gray-700">
                     <DialogHeader>

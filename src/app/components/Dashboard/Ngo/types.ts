@@ -15,7 +15,7 @@ export interface Campaign {
 }
 
 export interface Donation {
-  id: number;
+  id: string;
   donor: string;
   amount: number;
   date: string;
@@ -44,15 +44,16 @@ export interface DonorFeedback {
 }
 
 export interface CommunityProblem {
-  id: number;
+  id: string;
   title: string;
   description: string;
   category: string;
   postedBy: string;
   date: string;
   location: string;
-  relevantToUs: boolean;
-  responded?: boolean;
+  responses: number;
+  upvotes: number;
+  userVoted?: boolean;
 }
 
 export interface TeamMember {

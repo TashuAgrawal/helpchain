@@ -20,6 +20,9 @@ import fetchAllCommunityProblems from "@/Helper/NgoServices/GetAllProblems"
 import toggleBookmark from "@/Helper/UserServices/ToggleBookmark"
 import addTransaction from "@/Helper/UserServices/AddTransactions"
 import fetchUserTransactionsById from "@/Helper/UserServices/GetMyTransactions"
+import fetchBookmarkedNGOs from "@/Helper/UserServices/Getmybookmarks"
+import toggleProblemUpvote from "@/Helper/UserServices/UpvoteProblem"
+import fetchUpvotedProblems from "@/Helper/UserServices/GetmyupvotedProblems"
 
 const userBadgesList: UserBadge[] = [
   {
@@ -88,13 +91,17 @@ const UserDashboard = () => {
   useEffect(() => {
     async function fetchData() {
       try {
-
         let userId;
         const userStr = localStorage.getItem("user");
         if (userStr) {
           const userObj = JSON.parse(userStr);
           userId = userObj?.user.mongoId;
         }
+
+        const result4 = await fetchBookmarkedNGOs(userId);
+        console.log(result4);
+
+        const bookmarkedIds = new Set(result4);
 
         const result = await fetchApprovedNgos();
         const mappedActiveNgos: NGO[] = result.map((ngo: any) => ({
@@ -106,10 +113,15 @@ const UserDashboard = () => {
           email: ngo.email,
           status: ngo.status,
           address: ngo.address,
-          isFavorite: false,
+          isFavorite: bookmarkedIds.has(ngo._id),
           description: ngo.description
         }));
+        console.log(mappedActiveNgos);
         setActiveNGOs(mappedActiveNgos);
+
+        const result5 = await fetchUpvotedProblems(userId);
+         const upvotedIds = new Set(result5);
+
         const result2 = await fetchAllCommunityProblems();
         const mappedProblems: CommunityProblem[] = result2.map((problem: any) => ({
           id: problem._id,
@@ -121,10 +133,9 @@ const UserDashboard = () => {
           location: problem.location,
           responses: problem.responses,
           upvotes: problem.upvotes,
-          userVoted: problem.userVoted,
+          userVoted: upvotedIds.has(problem._id),
         }));
         setCommunityProblems(mappedProblems);
-
         const result3 = await fetchUserTransactionsById(userId);
         console.log(result3);
         const mappedTransactions: MyDonation[] = result3.map((txn:any) => ({
@@ -136,20 +147,14 @@ const UserDashboard = () => {
           category: "<Fetch Category>", 
           impact: undefined,         
         }));
-
-        setMyDonations(mappedTransactions)
-
-
+        setMyDonations(mappedTransactions);
+        
       } catch (err) {
         console.error("Error fetching NGOs:", err);
       }
     }
     fetchData();
   }, []);
-
-
-
-  
 
   const navLinks = [
     { label: "Explore NGOs", href: "#explore" },
@@ -172,9 +177,7 @@ const UserDashboard = () => {
       toast.error("Please enter a valid donation amount");
       return;
     }
-
     console.log(selectedNGO);
-
     try {
       let userId;
       const userStr = localStorage.getItem("user");
@@ -199,11 +202,7 @@ const UserDashboard = () => {
         category: "",
         impact: undefined,
       };
-
-
       setMyDonations([mappedDonation, ...myDonations]);
-
-
     } catch (error) {
 
     }
@@ -301,12 +300,28 @@ const UserDashboard = () => {
     }
   };
 
-  const handleVoteProblem = (problemId: string) => {
-    setCommunityProblems(communityProblems.map(p =>
+  const handleVoteProblem = async (problemId: string) => {
+
+
+    try {
+        let userId;
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const userObj = JSON.parse(userStr);
+          userId = userObj?.user.mongoId;
+        }
+      const result = await toggleProblemUpvote(userId , problemId);
+      console.log(result);
+       setCommunityProblems(communityProblems.map(p =>
       p.id === problemId
         ? { ...p, upvotes: p.userVoted ? p.upvotes - 1 : p.upvotes + 1, userVoted: !p.userVoted }
         : p
     ));
+    } catch (error) {
+      
+    }
+
+   
   };
 
   const handleAddToCompare = (ngo: NGO) => {

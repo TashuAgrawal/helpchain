@@ -12,6 +12,8 @@ import { CommunityTab } from "./CommunityTab";
 import { AnalyticsTab } from "./AnalyticsTab";
 import addCampaign from "@/Helper/NgoServices/AddCampaign"
 import fetchCampaignsByNgo from "@/Helper/NgoServices/GetMyCampaign"
+import fetchTransactionsByNgoId from "@/Helper/NgoServices/GetMyTransations"
+import fetchAllCommunityProblems from "@/Helper/NgoServices/GetAllProblems"
 
 export function NGODashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -19,7 +21,7 @@ export function NGODashboard() {
   const [isEditCampaignOpen, setIsEditCampaignOpen] = useState(false);
   const [isNewUpdateOpen, setIsNewUpdateOpen] = useState(false);
   const [isEditUpdateOpen, setIsEditUpdateOpen] = useState(false);
-  const [selectedProblem, setSelectedProblem] = useState<number | null>(null);
+  const [selectedProblem, setSelectedProblem] = useState<string | null>(null);
   const [isResponseDialogOpen, setIsResponseDialogOpen] = useState(false);
   const [isFeedbackReplyOpen, setIsFeedbackReplyOpen] = useState(false);
   const [selectedCampaign, setSelectedCampaign] = useState<Campaign | null>(null);
@@ -37,7 +39,8 @@ export function NGODashboard() {
   const [donationFilter, setDonationFilter] = useState("all");
   const [dateRange, setDateRange] = useState("month");
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-
+  const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
+  const [communityProblems, setCommunityProblems] = useState<CommunityProblem[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -50,7 +53,6 @@ export function NGODashboard() {
           ngoId = userObj?.user.mongoId;
         }
         const result = await fetchCampaignsByNgo(ngoId);
-        console.log(result);
         const mappedCampaigns: Campaign[] = result.map((item: any) => ({
           id: item._id,
           title: item.title,
@@ -64,11 +66,33 @@ export function NGODashboard() {
           ngoId: item.ngoId,
           endDate: item.endDate,
         }));
-
         setCampaigns(mappedCampaigns);
+        const result2 = await fetchTransactionsByNgoId(ngoId);
+        const mappedDonations: Donation[] = result2.map((txn: any) => ({
+          id: txn._id,
+          donor: txn.donor,
+          amount: txn.amount,
+          date: txn.date,
+          message: txn.message ?? "",
+          anonymous: txn.anonymous ?? false,
+        }));
+        setRecentDonations(mappedDonations);
+        const result3 = await fetchAllCommunityProblems();
+        console.log(result3);
+        const mappedProblems: CommunityProblem[] = result3.map((problem: any) => ({
+          id: problem._id,
+          title: problem.title,
+          description: problem.description,
+          category: problem.category,
+          postedBy: problem.postedBy,
+          date: problem.date,
+          location: problem.location,
+          responses: problem.responses,
+          upvotes: problem.upvotes,
+          userVoted: problem.userVoted ?? false,
+        }));
 
-        console.log(mappedCampaigns);
-
+        setCommunityProblems(mappedProblems);
 
       } catch (err) {
         console.error("Error fetching NGOs:", err);
@@ -77,13 +101,6 @@ export function NGODashboard() {
     fetchData();
   }, []);
 
-  const [recentDonations, setRecentDonations] = useState<Donation[]>([
-    { id: 1, donor: "Anonymous", amount: 500, date: "2025-10-18", message: "Great work!", anonymous: true },
-    { id: 2, donor: "John Smith", amount: 250, date: "2025-10-17", anonymous: false },
-    { id: 3, donor: "Sarah Johnson", amount: 1000, date: "2025-10-16", message: "Keep up the good work!", anonymous: false },
-    { id: 4, donor: "Michael Brown", amount: 150, date: "2025-10-15", anonymous: false },
-    { id: 5, donor: "Anonymous", amount: 750, date: "2025-10-14", message: "Making a difference!", anonymous: true },
-  ]);
 
   const [impactUpdates, setImpactUpdates] = useState<ImpactUpdate[]>([
     {
@@ -111,42 +128,6 @@ export function NGODashboard() {
     { id: 1, donor: "Priya Sinha", comment: "Loved seeing updates and pictures. Keep posting!", date: "Today", replied: false, rating: 5 },
     { id: 2, donor: "Arjun Patel", comment: "Can you share a breakdown of medical fund usage?", date: "Yesterday", replied: false, rating: 4 },
     { id: 3, donor: "Meera Kapoor", comment: "Fantastic transparency! This is how all NGOs should operate.", date: "2 days ago", replied: true, rating: 5 },
-  ]);
-
-  const [communityProblems, setCommunityProblems] = useState<CommunityProblem[]>([
-    {
-      id: 1,
-      title: "No Clean Water in Village Rampur",
-      description: "Our village of 500 families has no access to clean drinking water. We have to walk 5km daily to fetch water from a contaminated well.",
-      category: "Water & Sanitation",
-      postedBy: "Rajesh Kumar",
-      date: "2025-10-12",
-      location: "Rampur, Bihar",
-      relevantToUs: true,
-      responded: false
-    },
-    {
-      id: 2,
-      title: "Children Without School Supplies",
-      description: "30+ children in our area cannot afford notebooks, pens, and bags for school. Many are dropping out.",
-      category: "Education",
-      postedBy: "Priya Sharma",
-      date: "2025-10-10",
-      location: "Dharavi, Mumbai",
-      relevantToUs: false,
-      responded: false
-    },
-    {
-      id: 3,
-      title: "Contaminated Water Source Affecting 200 Families",
-      description: "Our community's only water well has been contaminated. We urgently need a new water source or filtration system.",
-      category: "Water & Sanitation",
-      postedBy: "Amit Verma",
-      date: "2025-10-15",
-      location: "Jaipur, Rajasthan",
-      relevantToUs: true,
-      responded: false
-    },
   ]);
 
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
@@ -187,18 +168,9 @@ export function NGODashboard() {
       startDate: new Date().toISOString().split('T')[0],
       ngoId: ngoId
     };
-
-
-
-
-    console.log(newCampaign, ngoId);
-
-
     try {
       const result = await addCampaign(newCampaign);
-      console.log(result);
-
-      const mappedCampaigns= {
+      const mappedCampaigns = {
         id: result.campaign._id,
         title: result.campaign.title,
         goal: result.campaign.goal,
@@ -215,7 +187,7 @@ export function NGODashboard() {
 
     } catch (error) {
       console.log(error);
-      
+
     }
 
     toast.success("Campaign created successfully!");
@@ -270,7 +242,7 @@ export function NGODashboard() {
     setImpactUpdates(impactUpdates.filter(u => u.id !== id));
     toast.success("Update deleted successfully!");
   };
-  const handleRespondToProblem = (problemId: number) => {
+  const handleRespondToProblem = (problemId: string) => {
     setCommunityProblems(communityProblems.map(p =>
       p.id === problemId ? { ...p, responded: true } : p
     ));
@@ -302,9 +274,11 @@ export function NGODashboard() {
     toast.success("Financial report uploaded successfully!");
     setIsFinancialReportDialogOpen(false);
   };
-  const totalRaised = campaigns.reduce((sum, c) => sum + c.raised, 0);
+  const totalRaised = recentDonations.reduce((sum, donation) => sum + donation.amount, 0);
   const activeCampaignsCount = campaigns.filter(c => c.status === "Active").length;
-  const totalDonors = campaigns.reduce((sum, c) => sum + c.donors, 0);
+  const allDonors = campaigns.flatMap(c => c.donors);
+  const uniqueDonors = new Set(allDonors);
+  const totalDonors = uniqueDonors.size;
   const averageRating = donorFeedback.reduce((sum, f) => sum + f.rating, 0) / donorFeedback.length;
   const filteredDonations = recentDonations.filter(d => {
     if (donationFilter === "all") return true;

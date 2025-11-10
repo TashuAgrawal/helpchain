@@ -12,19 +12,14 @@ import CommunityProblem from "@/app/lib/models/CommunityProblem";
 export async function POST(request) {
   try {
     await connectDB();
-
     const { problemId } = await request.json();
-
     if (!problemId) {
       return NextResponse.json({ message: "problemId is required." }, { status: 400 });
     }
-
     const problem = await CommunityProblem.findById(problemId);
-
     if (!problem) {
       return NextResponse.json({ message: "Community problem not found." }, { status: 404 });
     }
-
     problem.upvotes += 1;
     await problem.save();
 
