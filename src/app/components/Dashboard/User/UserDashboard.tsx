@@ -224,7 +224,6 @@ const UserDashboard = () => {
 
   const handleToggleFavorite = async (ngoId: string) => {
     try {
-
       let userId;
       const userStr = localStorage.getItem("user");
       if (userStr) {

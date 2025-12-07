@@ -1,5 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
+
 const TransactionSchema = new Schema({
   donor: {
     type: String,
@@ -18,10 +19,15 @@ const TransactionSchema = new Schema({
   date: {
     type: Date,
     required: true,
-    default:Date.now
+    default: Date.now
   },
   status: {
     type: String,
+    trim: true,
+  },
+  campaignid: {
+    type: String,
+    required: true,
     trim: true,
   },
   utilization: {

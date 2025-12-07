@@ -8,7 +8,7 @@ export async function POST(request) {
   try {
     await connectDB();
 
-    const { donor, ngo, amount, date, status, utilization, category } = await request.json();
+    const { donor, ngo, amount, status, utilization, category , campaignid } = await request.json();
 
     // Basic validation
     if (!donor || !ngo || !amount ) {
@@ -22,6 +22,7 @@ export async function POST(request) {
       status,
       utilization,
       category,
+      campaignid
     });
 
     await newTransaction.save();

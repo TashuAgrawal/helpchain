@@ -91,9 +91,7 @@ export function NGODashboard() {
           upvotes: problem.upvotes,
           userVoted: problem.userVoted ?? false,
         }));
-
         setCommunityProblems(mappedProblems);
-
       } catch (err) {
         console.error("Error fetching NGOs:", err);
       }

@@ -3,8 +3,9 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../../ui/card";
 import { Button } from "../../ui/button";
 import { Badge } from "../../ui/badge";
-import { Star, Bookmark, BookmarkCheck, FileText, Heart, BarChart3 } from "lucide-react";
+import { Bookmark, BookmarkCheck, FileText, Heart, BarChart3 } from "lucide-react";
 import { NGO } from "./types";
+import { useRouter } from "next/navigation";
 
 interface NGOCardProps {
   ngo: NGO;
@@ -21,6 +22,13 @@ export function NGOCard({
   onAddToCompare,
   isInCompare,
 }: NGOCardProps) {
+
+  const router = useRouter();
+
+  const handleViewDetails = () => {
+    router.push(`/ngo-detail/${ngo.id}`);
+  };
+
   return (
     <Card className="rounded-xl border-none shadow-sm hover:shadow-md transition-all bg-white dark:bg-gray-800">
       <div className="relative h-48 bg-gray-200 dark:bg-gray-700 rounded-t-xl overflow-hidden">
@@ -61,7 +69,7 @@ export function NGOCard({
       <CardContent className="space-y-4">
         <div className="flex justify-between text-sm mb-2">
           <span className="text-gray-600 dark:text-gray-300">Total Donations</span>
-          <span className="text-gray-900 dark:text-white">{ngo.totalDonations?ngo.totalDonations:0}</span>
+          <span className="text-gray-900 dark:text-white">{ngo.totalDonations ? ngo.totalDonations : 0}</span>
         </div>
         <div className="text-sm bg-green-50 dark:bg-green-900/20 p-2 rounded-lg">
           <p className="text-green-700 dark:text-green-400 flex items-center gap-1">
@@ -82,16 +90,22 @@ export function NGOCard({
           <Button
             variant="outline"
             size="sm"
-            className={`rounded-lg ${
-              isInCompare
+            className={`rounded-lg ${isInCompare
                 ? "bg-blue-50 dark:bg-blue-900/20 border-blue-600 dark:border-blue-400"
                 : "dark:border-gray-600 dark:hover:bg-gray-700"
-            }`}
+              }`}
             onClick={() => onAddToCompare(ngo)}
           >
             <BarChart3 className="w-4 h-4" />
           </Button>
         </div>
+        <Button
+          variant="outline"
+          className="w-full rounded-lg mt-1"
+          onClick={handleViewDetails}
+        >
+          View Details
+        </Button>
       </CardContent>
     </Card>
   );

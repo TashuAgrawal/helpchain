@@ -23,8 +23,6 @@ export function CommunityTab({
           <h1 className="text-gray-900 dark:text-white mb-2">Community Problems</h1>
           <p className="text-gray-600 dark:text-gray-300">Post problems and connect with NGOs who can help</p>
         </div>
-        {/* --- FIX IS HERE --- */}
-        {/* Removed the <DialogTrigger asChild> wrapper */}
         <Button 
           className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 rounded-lg gap-2"
           onClick={() => setIsProblemDialogOpen(true)}
@@ -32,7 +30,6 @@ export function CommunityTab({
           <Plus className="w-4 h-4" />
           Post Problem
         </Button>
-        {/* --- END FIX --- */}
       </div>
 
       {/* Community Problems List */}
