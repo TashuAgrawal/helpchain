@@ -14,6 +14,9 @@ import addCampaign from "@/Helper/NgoServices/AddCampaign"
 import fetchCampaignsByNgo from "@/Helper/NgoServices/GetMyCampaign"
 import fetchTransactionsByNgoId from "@/Helper/NgoServices/GetMyTransations"
 import fetchAllCommunityProblems from "@/Helper/NgoServices/GetAllProblems"
+import fetchAvgRating from "@/Helper/NgoServices/GetAvgRating"
+import { getUserById } from "@/Helper/NgoServices/GetUser";
+import { fetchFeedbackByNgo } from "@/Helper/NgoServices/GetAllFeedback";
 
 export function NGODashboard() {
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -41,17 +44,29 @@ export function NGODashboard() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [recentDonations, setRecentDonations] = useState<Donation[]>([]);
   const [communityProblems, setCommunityProblems] = useState<CommunityProblem[]>([]);
+  const [averageRating, setaverageRating] = useState(0);
+
+  const [donorFeedback, setDonorFeedback] = useState<DonorFeedback[]>([]);
 
   useEffect(() => {
     async function fetchData() {
       try {
+
+        const formatDate = (isoDate: string) => {
+          const date = new Date(isoDate);
+          const day = date.getDate().toString().padStart(2, '0');
+          const month = (date.getMonth() + 1).toString().padStart(2, '0'); // +1 because months are 0-indexed
+          const year = date.getFullYear();
+          return `${day}/${month}/${year}`;
+        };
         let ngoId;
         const userStr = localStorage.getItem("user");
         if (userStr) {
           const userObj = JSON.parse(userStr);
-          console.log(userObj);
           ngoId = userObj?.user.mongoId;
         }
+
+        // Fetch campaigns
         const result = await fetchCampaignsByNgo(ngoId);
         const mappedCampaigns: Campaign[] = result.map((item: any) => ({
           id: item._id,
@@ -62,42 +77,86 @@ export function NGODashboard() {
           status: item.status,
           lastUpdate: item.lastUpdate,
           description: item.description,
-          startDate: item.startDate,
+          startDate: formatDate(item.startDate),
           ngoId: item.ngoId,
           endDate: item.endDate,
         }));
         setCampaigns(mappedCampaigns);
+
+        
+
+
+        // Fetch transactions
         const result2 = await fetchTransactionsByNgoId(ngoId);
-        const mappedDonations: Donation[] = result2.map((txn: any) => ({
-          id: txn._id,
-          donor: txn.donor,
-          amount: txn.amount,
-          date: txn.date,
-          message: txn.message ?? "",
-          anonymous: txn.anonymous ?? false,
-        }));
-        setRecentDonations(mappedDonations);
+
+        const mappedDonationsWithNames: Donation[] = await Promise.all(
+          result2.map(async (txn: any) => {
+            let donorName = "Anonymous";
+            if (txn.donor && !txn.anonymous) {
+              try {
+                const userResponse = await getUserById(txn.donor);
+                donorName = userResponse.data.user.name;
+              } catch (error) {
+                donorName = "Unknown Donor";
+              }
+            }
+
+            return {
+              id: txn._id,
+              donor: donorName,  // ✅ Now shows actual name!
+              donorId: txn.donor, // Keep original ID if needed
+              amount: txn.amount,
+              date: formatDate(txn.date),
+              message: txn.message ?? "",
+              anonymous: txn.anonymous ?? false,
+            };
+          })
+        );
+
+        setRecentDonations(mappedDonationsWithNames);
+
+        // Fetch community problems
         const result3 = await fetchAllCommunityProblems();
-        console.log(result3);
         const mappedProblems: CommunityProblem[] = result3.map((problem: any) => ({
           id: problem._id,
           title: problem.title,
           description: problem.description,
           category: problem.category,
           postedBy: problem.postedBy,
-          date: problem.date,
+          date: formatDate(problem.date),
           location: problem.location,
           responses: problem.responses,
           upvotes: problem.upvotes,
           userVoted: problem.userVoted ?? false,
         }));
         setCommunityProblems(mappedProblems);
+
+        // Fetch average rating
+        const avgrate = await fetchAvgRating(ngoId);
+        setaverageRating(avgrate.averageRating);
+
+        const feedbackResult = await fetchFeedbackByNgo(ngoId);
+        console.log("Feedback result:", feedbackResult);
+
+        const mappedFeedback: DonorFeedback[] = feedbackResult.data.feedback.map((fb: any, index: number) => ({
+          id: index + 1,
+          donor: fb.donor,
+          comment: fb.comment,
+          date: fb.date,
+          replied: fb.replied || false,
+          rating: fb.rating || 5
+        }));
+
+        setDonorFeedback(mappedFeedback);
+
       } catch (err) {
         console.error("Error fetching NGOs:", err);
+        toast.error("Failed to load dashboard data");
       }
     }
     fetchData();
   }, []);
+
 
 
   const [impactUpdates, setImpactUpdates] = useState<ImpactUpdate[]>([
@@ -122,11 +181,7 @@ export function NGODashboard() {
     },
   ]);
 
-  const [donorFeedback, setDonorFeedback] = useState<DonorFeedback[]>([
-    { id: 1, donor: "Priya Sinha", comment: "Loved seeing updates and pictures. Keep posting!", date: "Today", replied: false, rating: 5 },
-    { id: 2, donor: "Arjun Patel", comment: "Can you share a breakdown of medical fund usage?", date: "Yesterday", replied: false, rating: 4 },
-    { id: 3, donor: "Meera Kapoor", comment: "Fantastic transparency! This is how all NGOs should operate.", date: "2 days ago", replied: true, rating: 5 },
-  ]);
+
 
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
     { id: 1, name: "Rahul Sharma", email: "rahul@cleanwater.org", role: "Administrator", joinedDate: "2023-01-15", status: "active" },
@@ -184,7 +239,6 @@ export function NGODashboard() {
       setCampaigns([...campaigns, mappedCampaigns]);
 
     } catch (error) {
-      console.log(error);
 
     }
 
@@ -277,7 +331,6 @@ export function NGODashboard() {
   const allDonors = campaigns.flatMap(c => c.donors);
   const uniqueDonors = new Set(allDonors);
   const totalDonors = uniqueDonors.size;
-  const averageRating = donorFeedback.reduce((sum, f) => sum + f.rating, 0) / donorFeedback.length;
   const filteredDonations = recentDonations.filter(d => {
     if (donationFilter === "all") return true;
     if (donationFilter === "anonymous") return d.anonymous;
@@ -397,12 +450,6 @@ export function NGODashboard() {
           </TabsContent>
         </Tabs>
       </main>
-
-      {/* All Dialog JSX has been moved into their respective tab components.
-        For example, EditCampaignDialog is now inside CampaignsTab.tsx.
-        NewCampaignDialog is now inside DashboardTab.tsx.
-        This keeps the main component file clean.
-      */}
     </div>
   );
 }

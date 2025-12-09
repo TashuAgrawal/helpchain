@@ -28,6 +28,9 @@ import fetchPendingNgos from "@/Helper/AdminServices/Pendingngo"
 import handleNgoApproval from "@/Helper/AdminServices/StatusChange"
 import fetchApprovedNgos from "@/Helper/AdminServices/Approvedngos"
 import fetchAllUsers from "@/Helper/AdminServices/Allusers"
+import fetchAllTransactions from "@/Helper/AdminServices/GetAllTransaction"
+import { getUserById } from "@/Helper/NgoServices/GetUser";
+import FetchAllFeedbacks from "@/Helper/AdminServices/FetchAllFeedbacks";
 
 interface PendingNGO {
   id: number;
@@ -88,63 +91,130 @@ export function AdminDashboard() {
   const [pendingNGOs, setPendingNGOs] = useState<PendingNGO[]>([]);
   const [activeNGOs, setActiveNGOs] = useState<ActiveNGO[]>([]);
   const [users, setUsers] = useState<User[]>([]);
+  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [userFeedbacks , setUserFeedback] = useState( [
+    { user: "John Doe", feedback: "The donation impact update was great!", time: "1 hour ago", rating: 5 },
+    { user: "Priya Sinha", feedback: "Would love more frequent updates from NGOs.", time: "Yesterday", rating: 4 },
+  ]);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const result = await fetchPendingNgos();
-        console.log("Pending NGOs:", result);
-        const mappedNgos: PendingNGO[] = result.map((ngo: any) => ({
-          id: ngo._id,
-          name: ngo.name,
-          cause: ngo.cause,
-          submittedDate: ngo.submittedDate,
-          email: ngo.email,
-          totalDonations: ngo.totalDonations,
-          description: ngo.description,
-          registrationNumber: ngo.registrationNumber,
-          address: ngo.address,
-          status: ngo.status,
-        }));
+  async function fetchData() {
+    try {
+      const result = await fetchPendingNgos();
+      const mappedNgos: PendingNGO[] = result.map((ngo: any) => ({
+        id: ngo._id,
+        name: ngo.name,
+        cause: ngo.cause,
+        submittedDate: ngo.submittedDate,
+        email: ngo.email,
+        totalDonations: ngo.totalDonations,
+        description: ngo.description,
+        registrationNumber: ngo.registrationNumber,
+        address: ngo.address,
+        status: ngo.status,
+      }));
+      setPendingNGOs(mappedNgos);
 
-        setPendingNGOs(mappedNgos);
+      const result2 = await fetchApprovedNgos();
+      const alltransaction = await fetchAllTransactions();
 
-        const result2 = await fetchApprovedNgos();
+      // ✅ Process transactions to create lookups for USERS and NGOS
+      const userDonationTotals: { [userId: string]: number } = {};
+      const userDonationCounts: { [userId: string]: number } = {};
+      const ngoDonationTotals: { [ngoId: string]: number } = {};
+      const ngoUniqueDonors: { [ngoId: string]: Set<string> } = {};
+      
+      const mappedTransactions: Transaction[] = await Promise.all(
+        alltransaction.map(async (txn: any, index: number) => {
+          const amount = parseFloat(txn.amount) || 0;
+          
+          // ✅ USER calculations (non-anonymous only)
+          if (txn.donor && txn.donor !== "anonymous") {
+            userDonationTotals[txn.donor] = (userDonationTotals[txn.donor] || 0) + amount;
+            userDonationCounts[txn.donor] = (userDonationCounts[txn.donor] || 0) + 1;
+          }
 
-        const mappedActiveNgos: ActiveNGO[] = result2.map((ngo: any) => ({
-          id: ngo._id,
-          name: ngo.name,
-          cause: ngo.cause,
-          donationsReceived: ngo.totalDonations ?? 0,
-          updates: ngo.updates ?? [], // default empty array if updates missing
-          email: ngo.email,
-          status: ngo.status,
-        }));
+          // ✅ NGO calculations (all transactions)
+          if (txn.ngo) {
+            ngoDonationTotals[txn.ngo] = (ngoDonationTotals[txn.ngo] || 0) + amount;
+            if (txn.donor && txn.donor !== "anonymous") {
+              ngoUniqueDonors[txn.ngo] = ngoUniqueDonors[txn.ngo] || new Set();
+              ngoUniqueDonors[txn.ngo].add(txn.donor);
+            }
+          }
 
-        setActiveNGOs(mappedActiveNgos);
+          let donorName = "Anonymous";
+          if (txn.donor && txn.donor !== "anonymous") {
+            try {
+              const userResponse = await getUserById(txn.donor);
+              donorName = userResponse.data.user.username || userResponse.data.user.name || "Unknown Donor";
+            } catch (error) {
+              donorName = "Unknown Donor";
+            }
+          }
 
-        const result3 = await fetchAllUsers();
-        const mappedUsers: User[] = result3.map((user: any) => ({
-          id: user._id,
-          name: user.username || "",           // Map username to name
-          email: user.email,
-          totalDonations: user.totalDonations ?? 0,  // Default 0 if not present
-          donationCount: user.donationCount ?? 0,    // Default 0 if not present
-          joinedDate: user.createdAt || "",           // Use createdAt as joinedDate
-          status: user.status || "active",             // Default to active or empty
-          badge: user.badge || "",                      // Default empty badge
-        }));
+          const formatDate = (isoDate: string) => {
+            return new Date(isoDate).toLocaleDateString('en-GB');
+          };
 
-        setUsers(mappedUsers);
+          return {
+            id: index + 1,
+            donor: donorName, 
+            donorid: txn.donor,
+            ngo: txn.ngo,
+            amount: txn.amount,
+            date: formatDate(txn.date),
+            status: txn.status || "completed",
+            utilization: txn.utilization || "N/A",
+            category: txn.category || txn.campaignid || "General"
+          };
+        })
+      );
+      setAllTransactions(mappedTransactions);
 
-      } catch (err) {
-        console.error("Error fetching NGOs:", err);
-      }
+      // ✅ Convert NGO unique donors Sets to counts
+      const ngoUniqueDonorCounts: { [ngoId: string]: number } = {};
+      Object.keys(ngoUniqueDonors).forEach(ngoId => {
+        ngoUniqueDonorCounts[ngoId] = ngoUniqueDonors[ngoId].size;
+      });
+
+      const mappedActiveNgos: ActiveNGO[] = result2.map((ngo: any) => ({
+        id: ngo._id,
+        name: ngo.name,
+        cause: ngo.cause,
+        // ✅ Use calculated totals from transactions (prioritize over DB)
+        donationsReceived: ngoDonationTotals[ngo._id] || ngo.totalDonations || 0,
+        uniqueDonors: ngoUniqueDonorCounts[ngo._id] || 0, // ✅ NEW: Unique donor count
+        updates: ngo.updates ?? [],
+        email: ngo.email,
+        status: ngo.status,
+      }));
+      setActiveNGOs(mappedActiveNgos);
+
+      const result3 = await fetchAllUsers();
+      const mappedUsers: User[] = result3.map((user: any) => ({
+        id: user._id,
+        name: user.username || "",
+        email: user.email,
+        totalDonations: userDonationTotals[user._id] || user.totalDonations || 0,
+        donationCount: userDonationCounts[user._id] || user.donationCount || 0,
+        joinedDate: user.createdAt || "",
+        status: user.status || "active",
+        badge: user.badge || "",
+      }));
+      setUsers(mappedUsers);
+
+
+      const allfeedback = await FetchAllFeedbacks();
+      console.log(allfeedback);
+      
+
+    } catch (err) {
+      console.error("Error fetching data:", err);
     }
-    fetchData();
-  }, []);
-
-  const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  }
+  fetchData();
+}, []);
 
   const recentActivities = [
     { id: 1, type: "donation", description: "John Doe donated $500 to Clean Water Initiative", time: "2 hours ago" },
@@ -154,10 +224,7 @@ export function AdminDashboard() {
     { id: 5, type: "ngo_post", description: "Clean Water Initiative posted campaign update", time: "2 days ago" },
   ];
 
-  const userFeedbacks = [
-    { user: "John Doe", feedback: "The donation impact update was great!", time: "1 hour ago", rating: 5 },
-    { user: "Priya Sinha", feedback: "Would love more frequent updates from NGOs.", time: "Yesterday", rating: 4 },
-  ];
+  
 
   const totalDonations = allTransactions.reduce((sum, t) => sum + t.amount, 0);
   const totalUsers = users.length;
@@ -179,7 +246,6 @@ export function AdminDashboard() {
       setPendingNGOs(pendingNGOs.filter(n => n.id !== ngo.id));
       toast.success(`${ngo.name} has been approved!`);
     } catch (error) {
-      console.log(error);
     }
   };
 
@@ -195,37 +261,31 @@ export function AdminDashboard() {
     }
   };
 
-  const handleDeactivateNGO = async(ngoId: number) => {
+  const handleDeactivateNGO = async (ngoId: number) => {
     try {
-      console.log(123);
-      
+
       const result = await handleNgoApproval(ngoId, "suspend");
-      console.log(123);
-      
+
       setActiveNGOs(activeNGOs.map(ngo =>
         ngo.id === ngoId ? { ...ngo, status: "suspended" } : ngo
       ));
       toast.success("NGO has been suspended");
       setIsEditDialogOpen(false);
     } catch (error) {
-      console.log(error);
     }
   };
 
-  const handleReactivateNGO = async(ngoId: number) => {
+  const handleReactivateNGO = async (ngoId: number) => {
     try {
-      console.log(123);
-      
+
       const result = await handleNgoApproval(ngoId, "approve");
-      console.log(123);
-      
+
       setActiveNGOs(activeNGOs.map(ngo =>
         ngo.id === ngoId ? { ...ngo, status: "approved" } : ngo
       ));
       toast.success("NGO has been Re activated");
       setIsEditDialogOpen(false);
     } catch (error) {
-      console.log(error);
     }
   };
 

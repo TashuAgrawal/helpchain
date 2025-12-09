@@ -339,7 +339,7 @@ export function DashboardTab({
                   </div>
                 </div>
                 <Badge className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
-                  {communityProblems.filter(p => p.relevantToUs && !p.responded).length}
+                  {communityProblems.length}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">

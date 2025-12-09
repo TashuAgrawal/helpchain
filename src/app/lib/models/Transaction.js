@@ -27,7 +27,6 @@ const TransactionSchema = new Schema({
   },
   campaignid: {
     type: String,
-    required: true,
     trim: true,
   },
   utilization: {

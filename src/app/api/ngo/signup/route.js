@@ -32,7 +32,7 @@ export async function POST(request) {
       password,
       cause: "General Cause",
       description: "Default description",
-      registrationNumber: "REG12345",
+      registrationNumber: "REG123456",
       address: "Default Address",
       totalDonations: 0,
       status: "pending",

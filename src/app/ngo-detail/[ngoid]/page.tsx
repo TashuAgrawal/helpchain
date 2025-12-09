@@ -21,7 +21,8 @@ import addRating from "@/Helper/UserServices/AddRating";
 import { toast } from "sonner";
 import addTransaction from "@/Helper/UserServices/AddTransactions";
 import toggleFollowNGO from "@/Helper/UserServices/ToggleFollowing";
-import Following from "@/app/lib/models/Following";
+import UpdateRaisedAmount from "@/Helper/NgoServices/UpdateRaised";
+import CheckFollowing from "@/Helper/UserServices/CheckFollowing"
 
 export default function NGOPage() {
     const { ngoid } = useParams() as { ngoid: string };
@@ -77,6 +78,13 @@ export default function NGOPage() {
 
             localStorage.setItem("addedRating", String(previousRating));
             setRating(previousRating);
+
+            const followresult = await CheckFollowing(userId , ngoid);
+            console.log(followresult);
+
+            setFollowerCount(followresult.followerCount);
+            setIsFollowing(followresult.isFollowing)
+            
         }
 
         load();
@@ -192,9 +200,15 @@ export default function NGOPage() {
             const result = await addTransaction({
                 donor: userId,
                 ngo: ngoid,
-                campaignId: selectedCampaign.id,
+                campaignid: selectedCampaign.id,
                 amount: amount,
             });
+
+            const temp = await UpdateRaisedAmount({
+                campaignId:selectedCampaign.id, amount:amount
+            });
+
+            console.log(temp);
 
             console.log(result);
 

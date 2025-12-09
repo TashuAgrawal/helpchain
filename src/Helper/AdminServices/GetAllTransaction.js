@@ -1,6 +1,6 @@
 import axios from "axios";
 
-async function fetchAllTransactions(adminToken) {
+async function fetchAllTransactions() {
   try {
     const response = await axios.get("/api/transactions");
     if (response.status === 200) {

@@ -9,11 +9,12 @@ export async function POST(request) {
     await connectDB();
 
     const { donor, ngo, amount, status, utilization, category , campaignid } = await request.json();
-
-    // Basic validation
     if (!donor || !ngo || !amount ) {
       return NextResponse.json({ message: "All fields are required." }, { status: 400 });
     }
+
+    console.log(campaignid);
+    
 
     const newTransaction = new Transaction({
       donor,
@@ -25,6 +26,7 @@ export async function POST(request) {
       campaignid
     });
 
+    console.log(newTransaction);
     await newTransaction.save();
 
     return NextResponse.json({ message: "Transaction added successfully.", transaction: newTransaction }, { status: 201 });
