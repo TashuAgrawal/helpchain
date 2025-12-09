@@ -24,6 +24,9 @@ export async function POST(request) {
     if (existingNGO) {
       return NextResponse.json({ message: "NGO with this name or email already exists." }, { status: 409 });
     }
+     // Generate a unique registration number
+       const randomSuffix = Math.floor(10000 + Math.random() * 90000); // e.g., 54321
+       const registrationNumber = `REG${randomSuffix}`;
 
     // Create a new NGO (status defaults to 'pending')
     const newNGO = await NGO.create({
@@ -32,7 +35,7 @@ export async function POST(request) {
       password,
       cause: "General Cause",
       description: "Default description",
-      registrationNumber: "REG123456",
+      registrationNumber,
       address: "Default Address",
       totalDonations: 0,
       status: "pending",
