@@ -20,25 +20,35 @@ export default function Home() {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
 
   // Function to get user role from localStorage
-  const getUserRole = (): UserRole | null => {
-    if (typeof window !== 'undefined') {
-      try {
-        const user = localStorage.getItem('user');
-        if (user.role === 'user' || user.role === 'admin' ) {
-          return user.role as UserRole;
-        }else{
-          return "ngo" as UserRole
+ const getUserRole = (): UserRole | null => {
+  if (typeof window !== 'undefined') {
+    try {
+      const userString = localStorage.getItem('user');
+      if (userString) {
+        const user = JSON.parse(userString);
+        console.log('Parsed user:', user);
+
+        console.log(user.user.role);
+        
+        
+        if (user.user.role && (user.user.role === 'user' || user.user.role === 'admin' )) {
+          return user.user.role as UserRole;
         }
-      } catch (error) {
-        console.error('Error reading role from localStorage:', error);
+        return "ngo" as UserRole;
       }
+    } catch (error) {
+      console.error('Error reading/parsing user from localStorage:', error);
     }
-    return null;
-  };
+  }
+  return null;
+};
 
   // Conditional routing function
   const handleDashboardRedirect = () => {
     const role = getUserRole();
+
+    console.log(role);
+    
     
     if (role === 'user') {
       router.push('/users/dashboard');
@@ -221,7 +231,7 @@ export default function Home() {
           </p>
           
           <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 p-8 rounded-2xl border-2 border-indigo-500/30 backdrop-blur-sm hover:border-indigo-400/50 transition-all duration-300">
-            <div className="text-2xl font-mono font-bold text-indigo-300 mb-2 drop-shadow-lg select-all">helpchain.contact@gmail.com</div>
+            <div className="text-2xl font-mono font-bold text-indigo-300 mb-2 drop-shadow-lg select-all">tashuagrawal67@gmail.com</div>
             <p className="text-sm text-gray-400">📧 Ready to receive your documents, proposals, and partnership inquiries</p>
           </div>
           
