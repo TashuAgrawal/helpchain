@@ -46,10 +46,7 @@ export default function Home() {
   // Conditional routing function
   const handleDashboardRedirect = () => {
     const role = getUserRole();
-
     console.log(role);
-    
-    
     if (role === 'user') {
       router.push('/users/dashboard');
     } else if (role === 'admin') {

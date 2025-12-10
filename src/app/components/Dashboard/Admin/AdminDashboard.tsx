@@ -161,7 +161,7 @@ export function AdminDashboard() {
             id: index + 1,
             donor: donorName, 
             donorid: txn.donor,
-            ngo: txn.ngo,
+            ngo: txn.ngoName,
             amount: txn.amount,
             date: formatDate(txn.date),
             status: txn.status || "completed",
