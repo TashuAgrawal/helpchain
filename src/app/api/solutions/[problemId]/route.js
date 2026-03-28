@@ -1,7 +1,7 @@
 // src/app/api/solutions/[problemId]/route.js
-import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb"; 
-import Solution from "@/lib/models/Solution";
+import { NextResponse } from "next/server"
+import Solution from "@/app/lib/models/Solution";
+import { connectDB } from "@/app/lib/mongodb";
 export async function GET(request, { params }) {
   try {
     await connectDB();

@@ -3,7 +3,7 @@
 import { useAuth } from '@/app/components/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { AuthContextType, EnrichedUser } from '@/types/auth'; // Importing the correct type definitions
+import { AuthContextType , EnrichedUser } from '../types/auth';
 // No longer need to import FirebaseUser here as it's handled in the types file
 
 export default function DashboardPage() {

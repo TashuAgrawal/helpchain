@@ -3,7 +3,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/app/lib/mongodb";
 import CommunityProblemUpvote from "@/app/lib/models/CommunityProblemUpvote";
-import CommunityProblem from "@/app/lib/models/CommunityProblem";
 
 export async function GET(request, { params }) {
   try {

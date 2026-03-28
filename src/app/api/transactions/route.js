@@ -2,8 +2,8 @@
 
 import { NextResponse } from "next/server";
 import { connectDB } from "@/app/lib/mongodb";
-import Transaction from "@/app/lib/models/Transaction";
 import NGO from "@/app/lib/models/NGO";
+import Transaction from "@/app/lib/models/Transaction";
 
 export async function GET() {
   try {
@@ -12,7 +12,7 @@ export async function GET() {
     // Step 1: Get all transaction IDs
     const transactions = await Transaction.find().sort({ date: -1 }).lean();
     const ngoIds = [...new Set(transactions.map(t => t.ngo))]; // Unique NGO IDs
-
+    
     // Step 2: Fetch NGO names by IDs
     const ngos = await NGO.find({ _id: { $in: ngoIds } })
       .select('name _id')

@@ -1,7 +1,7 @@
 // src/app/components/ngo-dashboard/CampaignsTab.tsx
 
 import React from 'react';
-import { FileText, Edit, Trash2, Calendar } from "lucide-react";
+import { FileText, Edit, Trash2, Calendar, Eye } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../ui/card";  
 import { Button } from "../../ui/button";  
 import { Badge } from "../../ui/badge";  
@@ -11,6 +11,8 @@ import { Input } from "../../ui/input";
 import { Label } from "../../ui/label";  
 import { Textarea } from "../../ui/textarea";  
 import { Campaign } from './types';
+import { useRouter } from 'next/navigation'; // Add this import
+
 
 interface CampaignsTabProps {
   campaigns: Campaign[];
@@ -22,6 +24,7 @@ interface CampaignsTabProps {
   handleDeleteCampaign: (id: string) => void;
 }
 
+
 export function CampaignsTab({
   campaigns,
   isEditCampaignOpen, setIsEditCampaignOpen,
@@ -29,12 +32,14 @@ export function CampaignsTab({
   handleEditCampaign, handleDeleteCampaign
 }: CampaignsTabProps) {
   
+  const router = useRouter(); // Add router hook
+  
   return (
     <>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-gray-900 dark:text-white mb-2">My Campaigns</h1>
-          <p className="text-gray-600 dark:text-gray-300">Manage your fundraising campaigns</p>
+         <h1 className="text-gray-900 dark:text-white mb-2">My Campaigns</h1>
+         <p className="text-gray-600 dark:text-gray-300">Manage your fundraising campaigns</p>
         </div>
       </div>
 
@@ -86,11 +91,22 @@ export function CampaignsTab({
                     Latest: {campaign.lastUpdate}
                   </p>
                 </div>
-                <div className="flex gap-2">
+                <div className="grid grid-cols-2 gap-2">
+                  {/* New Show Details Button */}
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    className="rounded-lg bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700"
+                    onClick={() => router.push(`/campaign/${campaign.id}`)}
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    Details
+                  </Button>
+                  
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="flex-1 rounded-lg dark:border-gray-600 dark:hover:bg-gray-700"
+                    className="rounded-lg dark:border-gray-600 dark:hover:bg-gray-700"
                     onClick={() => {
                       setSelectedCampaign({...campaign});
                       setIsEditCampaignOpen(true);
@@ -99,10 +115,11 @@ export function CampaignsTab({
                     <Edit className="w-4 h-4 mr-1" />
                     Edit
                   </Button>
+                  
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="flex-1 rounded-lg text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20"
+                    className="rounded-lg text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20 col-span-2"
                     onClick={() => handleDeleteCampaign(campaign.id)}
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
@@ -118,49 +135,49 @@ export function CampaignsTab({
       {/* Edit Campaign Dialog */}
       <Dialog open={isEditCampaignOpen} onOpenChange={setIsEditCampaignOpen}>
         <DialogContent className="rounded-xl dark:bg-gray-800 dark:border-gray-700">
-          <DialogHeader>
-            <DialogTitle className="dark:text-white">Edit Campaign</DialogTitle>
-            <DialogDescription className="dark:text-gray-400">Update campaign details</DialogDescription>
-          </DialogHeader>
-          {selectedCampaign && (
-            <div className="space-y-4 mt-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-campaign-title" className="dark:text-gray-300">Campaign Title</Label>
-                <Input 
-                  id="edit-campaign-title" 
-                  value={selectedCampaign.title}
-                  onChange={(e) => setSelectedCampaign({...selectedCampaign, title: e.target.value})}
-                  className="rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-campaign-goal" className="dark:text-gray-300">Funding Goal ($)</Label>
-                <Input 
-                  id="edit-campaign-goal" 
-                  type="number"
-                  value={selectedCampaign.goal}
-                  onChange={(e) => setSelectedCampaign({...selectedCampaign, goal: parseInt(e.target.value)})}
-                  className="rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-campaign-description" className="dark:text-gray-300">Description</Label>
-                <Textarea
-                  id="edit-campaign-description"
-                  value={selectedCampaign.description || ""}
-                  onChange={(e) => setSelectedCampaign({...selectedCampaign, description: e.target.value})}
-                  rows={4}
-                  className="rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                />
-              </div>
-              <Button 
-                className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 rounded-lg"
-                onClick={handleEditCampaign}
-              >
-                Save Changes
-              </Button>
-            </div>
-          )}
+         <DialogHeader>
+           <DialogTitle className="dark:text-white">Edit Campaign</DialogTitle>
+           <DialogDescription className="dark:text-gray-400">Update campaign details</DialogDescription>
+         </DialogHeader>
+         {selectedCampaign && (
+           <div className="space-y-4 mt-4">
+             <div className="space-y-2">
+               <Label htmlFor="edit-campaign-title" className="dark:text-gray-300">Campaign Title</Label>
+               <Input 
+                 id="edit-campaign-title" 
+                 value={selectedCampaign.title}
+                 onChange={(e) => setSelectedCampaign({...selectedCampaign, title: e.target.value})}
+                 className="rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+               />
+             </div>
+             <div className="space-y-2">
+               <Label htmlFor="edit-campaign-goal" className="dark:text-gray-300">Funding Goal ($)</Label>
+               <Input 
+                 id="edit-campaign-goal" 
+                 type="number"
+                 value={selectedCampaign.goal}
+                 onChange={(e) => setSelectedCampaign({...selectedCampaign, goal: parseInt(e.target.value)})}
+                 className="rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+               />
+             </div>
+             <div className="space-y-2">
+               <Label htmlFor="edit-campaign-description" className="dark:text-gray-300">Description</Label>
+               <Textarea
+                 id="edit-campaign-description"
+                 value={selectedCampaign.description || ""}
+                 onChange={(e) => setSelectedCampaign({...selectedCampaign, description: e.target.value})}
+                 rows={4}
+                 className="rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+               />
+             </div>
+             <Button 
+               className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 rounded-lg"
+               onClick={handleEditCampaign}
+             >
+               Save Changes
+             </Button>
+           </div>
+         )}
         </DialogContent>
       </Dialog>
     </>

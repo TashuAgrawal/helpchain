@@ -3,7 +3,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/app/lib/mongodb";
 import Bookmark from "@/app/lib/models/Bookmark";
-import NGO from "@/app/lib/models/NGO";
 
 export async function GET(request, { params }) {
   try {

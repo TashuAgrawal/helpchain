@@ -92,7 +92,7 @@ export function AdminDashboard() {
   const [activeNGOs, setActiveNGOs] = useState<ActiveNGO[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
-  const [userFeedbacks , setUserFeedback] = useState( [
+  const [userFeedbacks] = useState( [
     { user: "John Doe", feedback: "The donation impact update was great!", time: "1 hour ago", rating: 5 },
     { user: "Priya Sinha", feedback: "Would love more frequent updates from NGOs.", time: "Yesterday", rating: 4 },
   ]);
