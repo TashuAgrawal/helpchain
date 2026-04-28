@@ -1,6 +1,6 @@
 // src/app/components/ngo-dashboard/DonorsTab.tsx
 
-import React from 'react';
+import React, { useState } from 'react';
 import { MessageCircle, Award, CheckCircle, Send, Filter, Download } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../ui/card";  
 import { Button } from "../../ui/button";  
@@ -21,7 +21,7 @@ interface DonorsTabProps {
   setIsFeedbackReplyOpen: (open: boolean) => void;
   selectedFeedback: DonorFeedback | null;
   setSelectedFeedback: (fb: DonorFeedback | null) => void;
-  handleReplyToFeedback: (id: number) => void;
+  handleReplyToFeedback: (id: number , text: string) => void;
 }
 
 export function DonorsTab({
@@ -31,6 +31,12 @@ export function DonorsTab({
   selectedFeedback, setSelectedFeedback,
   handleReplyToFeedback
 }: DonorsTabProps) {
+
+  const [replyText, setReplyText] = useState("");
+  const onSendReply = (id:number) => {
+      handleReplyToFeedback(id, replyText);
+      setReplyText(""); // Clear state after sending
+  };
 
   return (
     <>
@@ -166,11 +172,13 @@ export function DonorsTab({
                   placeholder="Type your response to the donor..."
                   rows={4}
                   className="rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)} // Capture text
                 />
               </div>
               <Button 
                 className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 rounded-lg"
-                onClick={() => handleReplyToFeedback(selectedFeedback.id)}
+                onClick={()=>onSendReply(selectedFeedback.id)} 
               >
                 <Send className="w-4 h-4 mr-2" />Send Reply
               </Button>

@@ -50,10 +50,10 @@ export async function GET(request, { params }) {
 
         return {
           id: fb._id.toString(),
-          donor,                           // ✅ userId → USERNAME
+          donor,                           
           comment: fb.text,
           date: new Date(fb.createdAt).toLocaleDateString(),
-          replied: fb.replied || false,
+          replied: fb.reply ? true : false,
           rating: fb.rating || 0
         };
       })

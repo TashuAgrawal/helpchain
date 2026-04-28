@@ -18,6 +18,10 @@ const FeedbackSchema = new Schema(
       ref: "NGO",
       required: true,
     },
+    reply: {
+      type: String,
+      maxlength: [1000, "Reply cannot exceed 1000 characters"],
+    },
     createdAt: {
       type: Date,
       default: Date.now,

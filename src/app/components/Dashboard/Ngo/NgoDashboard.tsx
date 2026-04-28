@@ -17,6 +17,7 @@ import fetchAllCommunityProblems from "@/Helper/NgoServices/GetAllProblems"
 import fetchAvgRating from "@/Helper/NgoServices/GetAvgRating"
 import { getUserById } from "@/Helper/NgoServices/GetUser";
 import { fetchFeedbackByNgo } from "@/Helper/NgoServices/GetAllFeedback";
+import addFeedbackReply from "@/Helper/NgoServices/AddFeedbackReply"
 
 
 export function NGODashboard() {
@@ -141,15 +142,14 @@ export function NGODashboard() {
 
         const mappedFeedback: DonorFeedback[] = feedbackResult.data.feedback.map((fb: any, index: number) => ({
           id: index + 1,
+          feedbackid:fb.id,
           donor: fb.donor,
           comment: fb.comment,
           date: fb.date,
-          replied: fb.replied || false,
+          replied: fb.reply || false,
           rating: fb.rating || 5
         }));
-
-        setDonorFeedback(mappedFeedback);
-
+        setDonorFeedback(mappedFeedback)
       } catch (err) {
         console.error("Error fetching NGOs:", err);
         toast.error("Failed to load dashboard data");
@@ -303,14 +303,44 @@ export function NGODashboard() {
     setIsResponseDialogOpen(false);
     setSelectedProblem(null);
   };
-  const handleReplyToFeedback = (feedbackId: number) => {
-    setDonorFeedback(donorFeedback.map(f =>
-      f.id === feedbackId ? { ...f, replied: true } : f
-    ));
+
+  const handleReplyToFeedback = async (uiId: number , text: string) => {
+  try {
+    // 1. Find the specific feedback object in your state using the UI id
+    const targetFeedback = donorFeedback.find(f => f.id === uiId);
+
+    if (!targetFeedback || !targetFeedback.feedbackid) {
+      toast.error("Feedback ID not found");
+      return;
+    }
+
+    // 2. Use the actual backend feedbackid for the API call
+    const data = {
+      feedbackId: targetFeedback.feedbackid, 
+      reply: text // Or your state variable for the reply text
+    };
+
+    console.log(data);
+    
+
+    await addFeedbackReply(data);
+
+    // 3. Update the local UI state to show it has been replied to
+    setDonorFeedback(prevFeedback => 
+      prevFeedback.map(f =>
+        f.id === uiId ? { ...f, replied: true } : f
+      )
+    );
+
     toast.success("Reply sent successfully!");
     setIsFeedbackReplyOpen(false);
     setSelectedFeedback(null);
-  };
+
+  } catch (error) {
+    console.error("Error replying to feedback:", error);
+    toast.error("Failed to send reply");
+  }
+};
   const handleSendThankYou = () => {
     toast.success("Thank you message sent to all recent donors!");
     setIsThankYouDialogOpen(false);

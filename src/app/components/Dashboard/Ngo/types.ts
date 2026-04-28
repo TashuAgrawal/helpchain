@@ -41,6 +41,7 @@ export interface DonorFeedback {
   date: string;
   replied?: boolean;
   rating: number;
+  feedbackid:string;
 }
 
 export interface CommunityProblem {
