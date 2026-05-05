@@ -1,6 +1,6 @@
 // src/app/components/ngo-dashboard/DashboardTab.tsx
-
-import React from 'react';
+"use client"
+import React, { useState } from 'react';
 import { Plus, TrendingUp, DollarSign, Users, Upload, FileText, MessageCircle, AlertCircle, Mail, Send, UserPlus } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../ui/card";
 import { Button } from "../../ui/button"; 
@@ -48,7 +48,7 @@ interface DashboardTabProps {
   handleSendThankYou: () => void;
   handleSendEmailCampaign: () => void;
   handleUploadFinancialReport: () => void;
-  handleAddTeamMember: () => void;
+  handleAddTeamMember: (email:string , role:string ) => void;
   setActiveTab: (tab: string) => void;
 }
 
@@ -67,6 +67,24 @@ export function DashboardTab({
   handleSendThankYou, handleSendEmailCampaign, handleUploadFinancialReport, handleAddTeamMember,
   setActiveTab
 }: DashboardTabProps) {
+
+
+  const [memberEmail, setMemberEmail] = useState('');
+  const [memberRole, setMemberRole] = useState('');
+
+  const onInvitationClick = () => {
+    if (!memberEmail || !memberRole) {
+      alert("Please fill in both email and role");
+      return;
+    }
+    
+    // Calling the handler with the local state data
+    handleAddTeamMember(memberEmail, memberRole);
+    
+    // Optional: Clear fields after sending
+    setMemberEmail('');
+    setMemberRole('');
+  };
 
   return (
     <>
@@ -414,6 +432,7 @@ export function DashboardTab({
                 className="rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
+            
             <div className="space-y-2">
               <Label htmlFor="member-email" className="dark:text-gray-300">Email</Label>
               <Input 
@@ -421,25 +440,29 @@ export function DashboardTab({
                 type="email"
                 placeholder="john@example.com" 
                 className="rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                value={memberEmail}
+                onChange={(e) => setMemberEmail(e.target.value)}
               />
             </div>
+
             <div className="space-y-2">
               <Label htmlFor="member-role" className="dark:text-gray-300">Role</Label>
-              <Select>
+              <Select onValueChange={(value) => setMemberRole(value)} value={memberRole}>
                 <SelectTrigger className="rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                  <SelectItem value="admin">Administrator</SelectItem>
+                  <SelectItem value="administrator">Administrator</SelectItem>
                   <SelectItem value="campaign">Campaign Manager</SelectItem>
                   <SelectItem value="finance">Finance Officer</SelectItem>
                   <SelectItem value="content">Content Manager</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+
             <Button 
               className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 rounded-lg"
-              onClick={handleAddTeamMember}
+              onClick={onInvitationClick}
             >
               <UserPlus className="w-4 h-4 mr-2" />
               Send Invitation

@@ -18,6 +18,7 @@ import fetchAvgRating from "@/Helper/NgoServices/GetAvgRating"
 import { getUserById } from "@/Helper/NgoServices/GetUser";
 import { fetchFeedbackByNgo } from "@/Helper/NgoServices/GetAllFeedback";
 import addFeedbackReply from "@/Helper/NgoServices/AddFeedbackReply"
+import addMember from "@/Helper/NgoServices/AddMember"
 
 
 export function NGODashboard() {
@@ -50,6 +51,13 @@ export function NGODashboard() {
 
   const [donorFeedback, setDonorFeedback] = useState<DonorFeedback[]>([]);
 
+  let ngoId:string;
+  const userStr = localStorage.getItem("user");
+  if (userStr) {
+    const userObj = JSON.parse(userStr);
+    ngoId = userObj?.user.mongoId;
+  }
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -61,12 +69,6 @@ export function NGODashboard() {
           const year = date.getFullYear();
           return `${day}/${month}/${year}`;
         };
-        let ngoId;
-        const userStr = localStorage.getItem("user");
-        if (userStr) {
-          const userObj = JSON.parse(userStr);
-          ngoId = userObj?.user.mongoId;
-        }
 
         // Fetch campaigns
         const result = await fetchCampaignsByNgo(ngoId);
@@ -84,9 +86,6 @@ export function NGODashboard() {
           endDate: item.endDate,
         }));
         setCampaigns(mappedCampaigns);
-
-        
-
 
         // Fetch transactions
         const result2 = await fetchTransactionsByNgoId(ngoId);
@@ -142,7 +141,7 @@ export function NGODashboard() {
 
         const mappedFeedback: DonorFeedback[] = feedbackResult.data.feedback.map((fb: any, index: number) => ({
           id: index + 1,
-          feedbackid:fb.id,
+          feedbackid: fb.id,
           donor: fb.donor,
           comment: fb.comment,
           date: fb.date,
@@ -304,49 +303,65 @@ export function NGODashboard() {
     setSelectedProblem(null);
   };
 
-  const handleReplyToFeedback = async (uiId: number , text: string) => {
-  try {
-    // 1. Find the specific feedback object in your state using the UI id
-    const targetFeedback = donorFeedback.find(f => f.id === uiId);
+  const handleReplyToFeedback = async (uiId: number, text: string) => {
+    try {
+      // 1. Find the specific feedback object in your state using the UI id
+      const targetFeedback = donorFeedback.find(f => f.id === uiId);
 
-    if (!targetFeedback || !targetFeedback.feedbackid) {
-      toast.error("Feedback ID not found");
-      return;
+      if (!targetFeedback || !targetFeedback.feedbackid) {
+        toast.error("Feedback ID not found");
+        return;
+      }
+
+      // 2. Use the actual backend feedbackid for the API call
+      const data = {
+        feedbackId: targetFeedback.feedbackid,
+        reply: text // Or your state variable for the reply text
+      };
+
+      console.log(data);
+
+
+      await addFeedbackReply(data);
+
+      // 3. Update the local UI state to show it has been replied to
+      setDonorFeedback(prevFeedback =>
+        prevFeedback.map(f =>
+          f.id === uiId ? { ...f, replied: true } : f
+        )
+      );
+
+      toast.success("Reply sent successfully!");
+      setIsFeedbackReplyOpen(false);
+      setSelectedFeedback(null);
+
+    } catch (error) {
+      console.error("Error replying to feedback:", error);
+      toast.error("Failed to send reply");
     }
-
-    // 2. Use the actual backend feedbackid for the API call
-    const data = {
-      feedbackId: targetFeedback.feedbackid, 
-      reply: text // Or your state variable for the reply text
-    };
-
-    console.log(data);
-    
-
-    await addFeedbackReply(data);
-
-    // 3. Update the local UI state to show it has been replied to
-    setDonorFeedback(prevFeedback => 
-      prevFeedback.map(f =>
-        f.id === uiId ? { ...f, replied: true } : f
-      )
-    );
-
-    toast.success("Reply sent successfully!");
-    setIsFeedbackReplyOpen(false);
-    setSelectedFeedback(null);
-
-  } catch (error) {
-    console.error("Error replying to feedback:", error);
-    toast.error("Failed to send reply");
-  }
-};
+  };
   const handleSendThankYou = () => {
     toast.success("Thank you message sent to all recent donors!");
     setIsThankYouDialogOpen(false);
   };
-  const handleAddTeamMember = () => {
+  const handleAddTeamMember = async (email: string, role: string) => {
+
+    console.log(email, role);
+
+    try {
+
+      const data = {
+        usermail: email,
+        ngoId:ngoId,
+        role: role
+      }
+      const result = await addMember(data);
+    } catch (error) {
+
+    }
+
     toast.success("Team member invitation sent!");
+
     setIsTeamMemberDialogOpen(false);
   };
   const handleSendEmailCampaign = () => {
