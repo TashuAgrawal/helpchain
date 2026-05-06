@@ -1,75 +1,78 @@
-// src/app/api/follow/toggle/route.js
 import { NextResponse } from "next/server";
 import { connectDB } from "@/app/lib/mongodb";
 import Following from "@/app/lib/models/Following";
+import Notification from "@/app/lib/models/Notification";
 
 /**
  * POST /api/follow/toggle
- * Toggles follow status for an NGO.
- * If following → unfollow, if not following → follow.
- * Expects JSON body with userId, ngoId.
+ * Toggles follow/unfollow + sends notification on follow
  */
 export async function POST(request) {
   try {
     await connectDB();
 
-
     const { userId, ngoId } = await request.json();
-
-    console.log(userId , ngoId);
-    
 
     if (!userId || !ngoId) {
       return NextResponse.json(
-        { message: "Missing required fields (userId, ngoId)." }, 
+        { message: "Missing required fields (userId, ngoId)." },
         { status: 400 }
       );
     }
 
-    // Check if already following
     const existingFollow = await Following.findOne({ userId, ngoId });
 
-    console.log(existingFollow);
-    
-
+    // ❌ UNFOLLOW CASE
     if (existingFollow) {
       await Following.deleteOne({ userId, ngoId });
+
       return NextResponse.json(
-        { 
+        {
           message: "Unfollowed successfully.",
-          action: 'unfollowed',
-        }, 
-        { status: 200 }
-      );
-    } else {
-      const follow = new Following({ userId, ngoId });
-
-      console.log(follow);
-      
-      await follow.save();
-
-      console.log(123);
-      
-      
-      return NextResponse.json(
-        { 
-          message: "Followed successfully.",
-        }, 
+          action: "unfollowed",
+        },
         { status: 200 }
       );
     }
+
+    // ✅ FOLLOW CASE
+    const follow = new Following({ userId, ngoId });
+    await follow.save();
+
+    // 📣 CREATE NOTIFICATION FOR NGO (inline logic)
+    try {
+      await Notification.create({
+        userId: ngoId, // NGO receives notification
+        fromUserId: userId,
+        type: "follow",
+        title: "New Follower",
+        message: `User ${userId} started following you.`,
+        isRead: false,
+      });
+    } catch (notifyError) {
+      console.error("Follow notification failed:", notifyError.message);
+      // ⚠️ don't block follow flow if notification fails
+    }
+
+    return NextResponse.json(
+      {
+        message: "Followed successfully.",
+        action: "followed",
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Toggle Follow Error:", error);
 
     if (error.code === 11000) {
       return NextResponse.json(
-        { message: "Already following this NGO." }, 
+        { message: "Already following this NGO." },
         { status: 409 }
       );
     }
-    
+
     return NextResponse.json(
-      { message: "Failed to toggle follow status." }, 
+      { message: "Failed to toggle follow status." },
       { status: 500 }
     );
   }
