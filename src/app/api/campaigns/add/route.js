@@ -3,10 +3,12 @@ import { connectDB } from "@/app/lib/mongodb";
 import Campaign from "@/app/lib/models/Campaign";
 import Notification from "@/app/lib/models/Notification";
 import Following from "@/app/lib/models/Following";
+import Volunteer from "@/app/lib/models/Volunteer";
+import CampaignVolunteer from "@/app/lib/models/CampaignVolunteer";
 
 /**
  * POST /api/campaigns/add
- * Adds campaign + sends notifications to followers
+ * Adds campaign + sends notifications to followers + nearby volunteers
  */
 export async function POST(request) {
   try {
@@ -23,15 +25,25 @@ export async function POST(request) {
       startDate,
       endDate,
       ngoId,
+      pincode,
     } = await request.json();
 
-    if (!title || !goal || !status || !lastUpdate || !startDate || !ngoId) {
+    if (
+      !title ||
+      !goal ||
+      !status ||
+      !lastUpdate ||
+      !startDate ||
+      !ngoId ||
+      !pincode
+    ) {
       return NextResponse.json(
         { message: "Missing required fields." },
         { status: 400 }
       );
     }
 
+    // 🆕 Create Campaign
     const newCampaign = new Campaign({
       title,
       goal,
@@ -43,16 +55,18 @@ export async function POST(request) {
       startDate: new Date(startDate),
       endDate: endDate ? new Date(endDate) : undefined,
       ngoId,
+      pincode,
     });
 
     await newCampaign.save();
 
-    // 📣 Fetch followers of NGO
+    // =========================
+    // 📣 1. Notify Followers
+    // =========================
     const followers = await Following.find({ ngoId }).distinct("userId");
 
-    // 🚨 If followers exist, create notifications
     if (followers.length > 0) {
-      const notifications = followers.map((userId) => ({
+      const followerNotifications = followers.map((userId) => ({
         userId,
         campaignId: newCampaign._id,
         type: "new_campaign",
@@ -61,14 +75,75 @@ export async function POST(request) {
         isRead: false,
       }));
 
-      await Notification.insertMany(notifications, { ordered: false });
+      await Notification.insertMany(followerNotifications, {
+        ordered: false,
+      });
     }
 
+    // =========================
+    // 📍 2. Notify Nearby Volunteers
+    // =========================
+    const pin = parseInt(pincode);
+    const minPin = pin - 3;
+    const maxPin = pin + 3;
+
+    const volunteers = await Volunteer.find({
+      pincode: { $gte: String(minPin), $lte: String(maxPin) },
+      isCurrently: true,
+    });
+
+    let volunteerCount = 0;
+
+    if (volunteers.length > 0) {
+      volunteerCount = volunteers.length;
+
+      // 📨 Create CampaignVolunteer entries
+      const requests = volunteers.map((vol) => ({
+        campaignId: newCampaign._id,
+        volunteerId: vol.userId,
+        requestStatus: "pending",
+        attended: false,
+      }));
+
+      await CampaignVolunteer.insertMany(requests, { ordered: false });
+
+      // 📊 Update request stats
+      const volunteerIds = volunteers.map((v) => v.userId);
+
+      console.log("Updating requestsReceived for volunteers:", volunteerIds);
+
+      await Volunteer.updateMany(
+        { userId: { $in: volunteerIds } },
+        { $inc: { requestsReceived: 1 } }
+      );
+
+      // 🔔 Notifications to volunteers
+      const volunteerNotifications = volunteers.map((vol) => ({
+        userId: vol.userId,
+        campaignId: newCampaign._id,
+        type: "volunteer_message",
+        title: "New Volunteer Opportunity",
+        message: `A campaign near you needs volunteers: ${title}`,
+        isRead: false,
+      }));
+
+      console.log("Creating notifications for volunteers:", volunteerNotifications);
+
+      await Notification.insertMany(volunteerNotifications, {
+        ordered: false,
+      });
+    }
+
+    // =========================
+    // ✅ Final Response
+    // =========================
     return NextResponse.json(
       {
-        message: "Campaign created successfully.",
+        message:
+          "Campaign created + notifications sent to followers and volunteers.",
         campaign: newCampaign,
-        notificationsSent: followers.length,
+        followersNotified: followers.length,
+        volunteersNotified: volunteerCount,
       },
       { status: 201 }
     );

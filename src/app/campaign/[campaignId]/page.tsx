@@ -1,15 +1,32 @@
-// src/app/campaign/[id]/page.tsx
-"use client"
-import React, { useEffect } from 'react';
+"use client";
+import React, { useEffect, useState } from "react";
+import {
+  Calendar,
+  DollarSign,
+  Users,
+  FileText,
+  TrendingUp,
+  ChevronRight,
+  Clock,
+  ArrowLeft,
+  Download,
+  Share2,
+  ExternalLink,
+  MoreVertical
+} from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { Button } from "@/app/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/app/components/ui/card";
+import { Badge } from "@/app/components/ui/badge";
+import { Progress } from "@/app/components/ui/progress";
+import { useParams, useRouter } from "next/navigation";
 
-import { Calendar, DollarSign, Users, FileText, ArrowDown, ArrowUp } from "lucide-react";
-import { format, parseISO } from 'date-fns';
-import { Button } from '@/app/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { Badge } from '@/app/components/ui/badge';
-import { Progress } from '@/app/components/ui/progress';
-import { useParams } from "next/navigation";
-
+// --- Interfaces ---
 
 interface Campaign {
   id: string;
@@ -22,7 +39,6 @@ interface Campaign {
   endDate?: string;
   donors: number;
   lastUpdate: string;
-  image?: string;
 }
 
 interface Transaction {
@@ -31,35 +47,63 @@ interface Transaction {
   donorName: string;
   donorEmail: string;
   date: string;
-  message?: string;
-  type: 'donation' | 'refund';
+  type: "donation" | "refund";
 }
 
-const CampaignDetailPage = () => {
+// --- Main Page Component ---
 
-    const { campaignId } = useParams() as { campaignId: string };
-  const [campaign, setCampaign] = React.useState<Campaign | null>(null);
-  const [transactions] = React.useState<Transaction[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+const CampaignDetailPage = () => {
+  const { campaignId } = useParams() as { campaignId: string };
+  const router = useRouter();
+
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!campaignId) return;
+
     const fetchCampaignData = async () => {
       try {
         setLoading(true);
 
-        // Fetch campaign details
+        // Fetch Campaign
         const campaignRes = await fetch(`/api/campaigns/${campaignId}`);
-        if (!campaignRes.ok) throw new Error('Campaign not found');
-        
+        if (!campaignRes.ok) throw new Error("Campaign not found");
         const campaignData = await campaignRes.json();
-        setCampaign(campaignData);
+        const cleanCampaign = campaignData._doc || campaignData;
 
-        // Fetch transactions for this campaign
+        setCampaign({
+          id: cleanCampaign._id || cleanCampaign.id,
+          title: cleanCampaign.title,
+          description: cleanCampaign.description,
+          goal: cleanCampaign.goal,
+          raised: cleanCampaign.raised,
+          status: cleanCampaign.status,
+          startDate: cleanCampaign.startDate,
+          endDate: cleanCampaign.endDate,
+          donors: cleanCampaign.donors,
+          lastUpdate: cleanCampaign.lastUpdate,
+        });
+
+        // Fetch Transactions
         const transactionsRes = await fetch(`/api/campaigns/${campaignId}/transactions`);
-        console.log(transactionsRes);
+        if (transactionsRes.ok) {
+          const data = await transactionsRes.json();
+          const txnArray = Array.isArray(data) ? data : data.transactions || [];
+          const formatted = txnArray.map((t: any) => ({
+            id: t._id || t.id,
+            amount: t.amount,
+            donorName: t.donorName,
+            donorEmail: t.donorEmail,
+            date: t.date,
+            type: t.type,
+          }));
+          setTransactions(formatted);
+        }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load campaign');
+        setError(err instanceof Error ? err.message : "Failed to load campaign");
       } finally {
         setLoading(false);
       }
@@ -70,11 +114,10 @@ const CampaignDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 dark:from-gray-900 dark:to-gray-800 p-8">
-        <div className="max-w-6xl mx-auto flex items-center justify-center h-64">
-          <div className="text-lg text-gray-600 dark:text-gray-400 animate-pulse">
-            Loading campaign details...
-          </div>
+      <div className="min-h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#0a0a0a]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-500 animate-pulse font-medium">Crunching analytics...</p>
         </div>
       </div>
     );
@@ -82,15 +125,13 @@ const CampaignDetailPage = () => {
 
   if (error || !campaign) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 dark:from-gray-900 dark:to-gray-800 p-8">
-        <div className="max-w-4xl mx-auto text-center py-24">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Campaign Not Found</h1>
-          <p className="text-xl text-gray-600 dark:text-gray-400 mb-8">{error}</p>
-          <Button
-            onClick={() => window.history.back()}
-            className="bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white px-8 py-3 rounded-xl"
-          >
-            Go Back
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#fafafa] dark:bg-[#0a0a0a] px-4">
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-xl text-center max-w-md">
+          <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">!</div>
+          <h1 className="text-2xl font-bold mb-2">Campaign Not Found</h1>
+          <p className="text-slate-500 mb-6">{error || "The campaign you're looking for doesn't exist or has been moved."}</p>
+          <Button className="w-full rounded-xl" onClick={() => router.back()}>
+            <ArrowLeft className="w-4 h-4 mr-2" /> Go Back
           </Button>
         </div>
       </div>
@@ -100,173 +141,219 @@ const CampaignDetailPage = () => {
   const progress = (campaign.raised / campaign.goal) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-teal-50 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
-        {/* Campaign Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent mb-6">
-            {campaign.title}
-          </h1>
-          <div className="max-w-2xl mx-auto">
-            <p className="text-xl text-gray-700 dark:text-gray-300 leading-relaxed mb-8">
-              {campaign.description}
-            </p>
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] text-slate-900 dark:text-slate-100 pb-20">
+      
+      {/* 🚀 Header Section */}
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 pt-12 pb-8 px-4 sticky top-0 z-10 shadow-sm">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <button 
+                onClick={() => router.back()}
+                className="flex items-center text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors uppercase tracking-widest"
+              >
+                <ArrowLeft className="w-3 h-3 mr-1" /> Dashboard
+              </button>
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">
+                {campaign.title}
+              </h1>
+              <div className="flex items-center gap-4 text-sm text-slate-500">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <div className={`w-2 h-2 rounded-full ${campaign.status === 'Active' ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`} />
+                  {campaign.status}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-4 h-4" />{(campaign.lastUpdate)}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" className="rounded-xl border-slate-200 dark:border-slate-700">
+                <Share2 className="w-4 h-4 mr-2" /> Share
+              </Button>
+              <Button size="sm" className="rounded-xl bg-slate-900 dark:bg-white dark:text-slate-900 hover:opacity-90">
+                Manage Campaign
+              </Button>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          {/* Main Campaign Card */}
-          <div className="lg:col-span-2">
-            <Card className="rounded-2xl border-none shadow-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-              <CardHeader>
-                <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3">
-                    <Badge
-                      className={
-                        campaign.status === "Active"
-                          ? "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                      }
-                    >
-                      {campaign.status}
-                    </Badge>
-                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                      <Calendar className="w-4 h-4" />
-                      <span>Started {format(parseISO(campaign.startDate), 'MMM dd, yyyy')}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <Users className="w-4 h-4" />
-                    <span>{campaign.donors} supporters</span>
-                  </div>
-                </div>
+      <div className="max-w-6xl mx-auto px-4 mt-8">
+        {/* 📊 High-Level Metrics */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <MetricCard 
+            title="Total Raised" 
+            value={`₹${campaign.raised.toLocaleString()}`} 
+            icon={<DollarSign className="text-emerald-500" />} 
+            trend="+12% from last week"
+            trendType="up"
+          />
+          <MetricCard 
+            title="Supporters" 
+            value={campaign.donors.toLocaleString()} 
+            icon={<Users className="text-blue-500" />} 
+          />
+          <MetricCard 
+            title="Avg. Donation" 
+            value={`₹${campaign.donors > 0 ? (campaign.raised / campaign.donors).toFixed(0) : 0}`} 
+            icon={<TrendingUp className="text-violet-500" />} 
+          />
+          <MetricCard 
+            title="Days Active" 
+            value="24" 
+            icon={<Calendar className="text-orange-500" />} 
+          />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Analytics Content */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Funding Progress Card */}
+            <Card className="border-none shadow-sm bg-white dark:bg-slate-900 overflow-hidden rounded-3xl">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-400">Funding Performance</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="flex justify-between items-baseline text-3xl font-bold text-gray-900 dark:text-white">
-                    <span>${campaign.raised.toLocaleString()}</span>
-                    <span className="text-xl font-normal text-gray-500">/ ${campaign.goal.toLocaleString()}</span>
-                  </div>
-                  <Progress value={progress} className="h-3 rounded-full" />
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {progress.toFixed(1)}% of goal reached
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-center p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl">
-                  <div>
-                    <DollarSign className="w-8 h-8 mx-auto text-green-600 mb-2" />
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white">{campaign.donors}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Total Donors</div>
-                  </div>
-                  <div>
-                    <FileText className="w-8 h-8 mx-auto text-blue-600 mb-2" />
-                    <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                      {transactions.length}
+                <div>
+                  <div className="flex justify-between items-end mb-4">
+                    <div>
+                      <span className="text-4xl font-black">₹{campaign.raised.toLocaleString()}</span>
+                      <span className="text-slate-400 ml-2 font-medium">/ ₹{campaign.goal.toLocaleString()}</span>
                     </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Transactions</div>
+                    <Badge className="bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-none px-3 py-1 text-sm font-bold">
+                      {progress.toFixed(1)}% Goal
+                    </Badge>
                   </div>
+                  <Progress value={progress} className="h-4 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden" />
                 </div>
+                
+                <div className="pt-4 border-t border-slate-50 dark:border-slate-800 flex items-center justify-between text-sm">
+                  <p className="text-slate-500 italic">“Great job! You are in the top 10% of similar campaigns this month.”</p>
+                  <Button variant="ghost" size="sm" className="text-blue-600 font-bold hover:bg-blue-50">Details</Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Transactions Activity Card */}
+            <Card className="border-none shadow-sm bg-white dark:bg-slate-900 rounded-3xl overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between border-b border-slate-50 dark:border-slate-800 py-6">
+                <CardTitle className="text-lg font-bold">Recent Transactions</CardTitle>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" className="h-8 text-xs rounded-lg"><Download className="w-3 h-3 mr-1" /> Export</Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                {transactions.length === 0 ? (
+                  <div className="py-20 text-center">
+                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FileText className="text-slate-300 w-8 h-8" />
+                    </div>
+                    <p className="font-bold text-slate-400 uppercase tracking-widest text-xs">No records found</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left">
+                      <thead className="bg-slate-50/50 dark:bg-slate-800/50">
+                        <tr className="text-[11px] font-bold uppercase tracking-widest text-slate-400 border-b border-slate-50 dark:border-slate-800">
+                          <th className="px-6 py-4">Contributor</th>
+                          <th className="px-6 py-4">Amount</th>
+                          <th className="px-6 py-4">Date</th>
+                          <th className="px-6 py-4 text-right">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+                        {transactions.map((t) => (
+                          <tr key={t.id} className="hover:bg-slate-50/30 dark:hover:bg-slate-800/30 transition-colors group">
+                            <td className="px-6 py-4">
+                              <div className="font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 transition-colors">{t.donorName}</div>
+                              <div className="text-xs text-slate-400">{t.donorEmail}</div>
+                            </td>
+                            <td className="px-6 py-4 font-mono font-bold text-slate-900 dark:text-slate-100">
+                              ₹{t.amount.toLocaleString()}
+                            </td>
+                            <td className="px-6 py-4 text-sm text-slate-500">
+                              {format(parseISO(t.date), "dd MMM yyyy")}
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full">
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
 
-          {/* Quick Stats */}
+          {/* Sidebar Area */}
           <div className="space-y-6">
-            <Card className="rounded-2xl border-none shadow-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm p-6">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Next Milestone</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                  ${((Math.floor(progress / 25) + 1) * 25).toLocaleString()}
+            
+            {/* Milestone Card */}
+            <Card className="bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-950 text-white border-none shadow-xl rounded-3xl overflow-hidden relative">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/20 blur-[60px] rounded-full -mr-16 -mt-16"></div>
+              <CardContent className="p-8 relative z-10">
+                <h3 className="text-blue-400 text-xs font-black uppercase tracking-[0.2em] mb-4">Upcoming Milestone</h3>
+                <div className="text-5xl font-black mb-2 tracking-tighter">
+                  {((Math.floor(progress / 25) + 1) * 25)}%
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">25% increments</div>
+                <p className="text-slate-400 text-sm leading-relaxed mb-8">You are currently on track to hit your next funding milestone by the end of the month.</p>
+                <Button className="w-full bg-white text-slate-900 hover:bg-slate-100 font-bold rounded-2xl py-6">
+                  Set New Goal <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
               </CardContent>
             </Card>
+
+            {/* Support/Resource Card */}
+            <Card className="border-none shadow-sm bg-white dark:bg-slate-900 rounded-3xl p-6">
+              <h4 className="font-bold mb-4 flex items-center gap-2">
+                <ExternalLink className="w-4 h-4 text-blue-600" /> Resources
+              </h4>
+              <div className="space-y-3">
+                <ResourceItem label="Download Marketing Kit" />
+                <ResourceItem label="Donor Communication Templates" />
+                <ResourceItem label="Tax Compliance Guide" />
+              </div>
+            </Card>
+
           </div>
         </div>
-
-        {/* Transactions Table */}
-        <Card className="rounded-2xl border-none shadow-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              Recent Transactions
-              <Badge variant="outline" className="ml-auto">
-                {transactions.length}
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {transactions.length === 0 ? (
-              <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                <DollarSign className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                <p className="text-lg">No transactions yet</p>
-                <p className="text-sm mt-1">Be this the first to support campaign!</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-gray-200 dark:border-gray-700">
-                      <th className="text-left py-4 px-2 font-semibold text-gray-900 dark:text-white text-sm">Donor</th>
-                      <th className="text-left py-4 px-2 font-semibold text-gray-900 dark:text-white text-sm">Amount</th>
-                      <th className="text-left py-4 px-2 font-semibold text-gray-900 dark:text-white text-sm">Date</th>
-                      <th className="text-left py-4 px-2 font-semibold text-gray-900 dark:text-white text-sm">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.slice(0, 10).map((transaction) => (
-                      <tr key={transaction.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                        <td className="py-4 px-2">
-                          <div>
-                            <div className="font-medium text-gray-900 dark:text-white">
-                              {transaction.donorName}
-                            </div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                              {transaction.donorEmail}
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-2">
-                          <div className="flex items-center gap-2">
-                            <span className={`text-xl font-bold ${
-                              transaction.type === 'donation' 
-                                ? 'text-green-600 dark:text-green-400' 
-                                : 'text-red-600 dark:text-red-400'
-                            }`}>
-                              {transaction.type === 'donation' ? <ArrowDown className="w-5 h-5" /> : <ArrowUp className="w-5 h-5" />}
-                            </span>
-                            <span className="text-xl font-bold text-gray-900 dark:text-white">
-                              ${transaction.amount.toLocaleString()}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-4 px-2 text-sm text-gray-600 dark:text-gray-400">
-                          {format(parseISO(transaction.date), 'MMM dd, yyyy')}
-                        </td>
-                        <td className="py-4 px-2">
-                          <Badge 
-                            className={`${
-                              transaction.type === 'donation'
-                                ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200'
-                                : 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200'
-                            }`}
-                          >
-                            {transaction.type === 'donation' ? 'Donation' : 'Refund'}
-                          </Badge>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
 };
+
+// --- Sub-components (Stateless) ---
+
+const MetricCard = ({ title, value, icon, trend, trendType }: any) => (
+  <Card className="border-none shadow-sm bg-white dark:bg-slate-900 rounded-3xl">
+    <CardContent className="p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-2xl">{icon}</div>
+        {trend && (
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${trendType === 'up' ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'}`}>
+            {trend}
+          </span>
+        )}
+      </div>
+      <div>
+        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{title}</p>
+        <h3 className="text-2xl font-black mt-1 tracking-tight">{value}</h3>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const ResourceItem = ({ label }: { label: string }) => (
+  <button className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all text-sm font-medium group">
+    <span className="text-slate-600 dark:text-slate-400 group-hover:text-blue-600 transition-colors">{label}</span>
+    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-blue-600" />
+  </button>
+);
 
 export default CampaignDetailPage;

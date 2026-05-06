@@ -42,6 +42,8 @@ interface DashboardTabProps {
   newCampaignGoal: string;
   setNewCampaignGoal: (goal: string) => void;
   newCampaignDescription: string;
+  newCampaignPincode: string;
+  setNewCampaignPincode: (pincode: string) => void;
   setNewCampaignDescription: (desc: string) => void;
   handleCreateUpdate: () => void;
   handleCreateCampaign: () => void;
@@ -65,7 +67,7 @@ export function DashboardTab({
   newCampaignTitle, setNewCampaignTitle, newCampaignGoal, setNewCampaignGoal, newCampaignDescription, setNewCampaignDescription,
   handleCreateUpdate, handleCreateCampaign,
   handleSendThankYou, handleSendEmailCampaign, handleUploadFinancialReport, handleAddTeamMember,
-  setActiveTab
+  setActiveTab , newCampaignPincode, setNewCampaignPincode
 }: DashboardTabProps) {
 
 
@@ -191,6 +193,7 @@ export function DashboardTab({
                     onChange={(e) => setNewCampaignGoal(e.target.value)}
                   />
                 </div>
+                
                 <div className="space-y-2">
                   <Label htmlFor="campaign-description" className="dark:text-gray-300">Description</Label>
                   <Textarea
@@ -202,6 +205,19 @@ export function DashboardTab({
                     onChange={(e) => setNewCampaignDescription(e.target.value)}
                   />
                 </div>
+
+                 <div className="space-y-2">
+                  <Label htmlFor="campaign-pincode" className="dark:text-gray-300">Pincode</Label>
+                  <Input
+                    id="campaign-pincode"
+                    placeholder="Enter pincode"
+                    className="rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    value={newCampaignPincode}
+                    onChange={(e) => setNewCampaignPincode(e.target.value)}
+                  />
+                </div>
+
+                
                 <Button 
                   className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 rounded-lg"
                   onClick={handleCreateCampaign}

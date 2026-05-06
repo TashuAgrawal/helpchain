@@ -16,12 +16,7 @@ export async function GET(
     
     // Fetch campaign by ID
     const campaign = await Campaign.findOne(
-      { _id: id },
-      { projection: { 
-        title: 1, description: 1, goal: 1, raised: 1, 
-        status: 1, startDate: 1, endDate: 1, 
-        donors: 1, lastUpdate: 1, image: 1 
-      } }
+      { _id: id }
     );
     
     if (!campaign) {
@@ -31,13 +26,10 @@ export async function GET(
       );
     }
     
-    // Convert MongoDB _id to string id
-    const campaignData = {
-      id: campaign._id.toString(),
-      ...campaign
-    };
-    
-    return NextResponse.json(campaignData);
+    return NextResponse.json({
+  ...campaign.toObject(),
+  id: campaign._id.toString(),
+});
     
   } catch (error) {
     console.error('Error fetching campaign:', error);

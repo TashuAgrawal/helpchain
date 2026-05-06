@@ -40,6 +40,7 @@ export function NGODashboard() {
   const [newCampaignTitle, setNewCampaignTitle] = useState("");
   const [newCampaignGoal, setNewCampaignGoal] = useState("");
   const [newCampaignDescription, setNewCampaignDescription] = useState("");
+  const [newCampaignPincode, setNewCampaignPincode] = useState("");
   const [newUpdateTitle, setNewUpdateTitle] = useState("");
   const [newUpdateDescription, setNewUpdateDescription] = useState("");
   const [donationFilter, setDonationFilter] = useState("all");
@@ -84,6 +85,7 @@ export function NGODashboard() {
           startDate: formatDate(item.startDate),
           ngoId: item.ngoId,
           endDate: item.endDate,
+          pincode: item.pincode
         }));
         setCampaigns(mappedCampaigns);
 
@@ -219,7 +221,8 @@ export function NGODashboard() {
       lastUpdate: "Campaign just started!",
       description: newCampaignDescription,
       startDate: new Date().toISOString().split('T')[0],
-      ngoId: ngoId
+      ngoId: ngoId,
+      pincode: newCampaignPincode
     };
     try {
       const result = await addCampaign(newCampaign);
@@ -235,6 +238,7 @@ export function NGODashboard() {
         startDate: result.campaign.startDate,
         ngoId: result.campaign.ngoId,
         endDate: result.campaign.endDate,
+        pincode: result.campaign.pincode
       };
       setCampaigns([...campaigns, mappedCampaigns]);
 
@@ -423,6 +427,8 @@ export function NGODashboard() {
               setNewUpdateTitle={setNewUpdateTitle}
               newUpdateDescription={newUpdateDescription}
               setNewUpdateDescription={setNewUpdateDescription}
+              newCampaignPincode={newCampaignPincode}
+              setNewCampaignPincode={setNewCampaignPincode}
               newCampaignTitle={newCampaignTitle}
               setNewCampaignTitle={setNewCampaignTitle}
               newCampaignGoal={newCampaignGoal}

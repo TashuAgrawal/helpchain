@@ -12,7 +12,6 @@ async function markVolunteerAttendance(attendanceData) {
       error.response?.data?.message ||
       error.message ||
       "Failed to mark attendance";
-
     console.error("Error marking attendance:", message);
     throw new Error(message);
   }

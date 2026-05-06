@@ -15,8 +15,11 @@ export async function GET(
     // Fetch transactions for this campaign
     const transactions = await Transaction
       .find({ 
-        campaignId: id
+        campaignid: id
       })
+
+      console.log(id , transactions);
+      
     
     
     return NextResponse.json({
