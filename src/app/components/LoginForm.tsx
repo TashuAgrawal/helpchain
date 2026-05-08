@@ -13,19 +13,33 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("ngo");  // Default role
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
     try {
       const result = await login({ email, password, role });
-      if (result.success) {
+      if (result.requiresOtp) {
+        // Redirect to OTP verification page
+        router.push(
+          `/verify-otp?email=${encodeURIComponent(result.email || email)}&role=${encodeURIComponent(result.role || role)}&context=login`
+        );
+      } else if (result.success) {
         router.push("/");
+      } else {
+        setError(result.message || "Login failed. Please try again.");
       }
-    } catch (error) {
-      console.error("Login form submission error:", error);
+    } catch (err) {
+      console.error("Login form submission error:", err);
+      setError("An unexpected error occurred.");
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -53,6 +67,12 @@ const LoginForm = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg px-4 py-3">
+                <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -101,15 +121,15 @@ const LoginForm = () => {
                 <option value="ngo">NGO</option>
                 <option value="user">User</option>
                 <option value="admin">Admin</option>
-                {/* Add more roles if needed */}
               </select>
             </div>
 
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 rounded-lg h-11"
+              disabled={loading}
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </Button>
 
             <div className="text-center mt-2">
@@ -119,7 +139,7 @@ const LoginForm = () => {
             </div>
 
             <div className="text-center text-gray-600 dark:text-gray-400 mt-4">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <button
                 type="button"
                 onClick={() => router.push("/signup")}

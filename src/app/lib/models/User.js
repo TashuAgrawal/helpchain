@@ -25,7 +25,11 @@ const UserSchema = new Schema({
     type: String,
     enum: ['user', 'admin'], 
     default: 'user',
-  }
+  },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
 }, { 
   timestamps: true // Adds createdAt and updatedAt fields
 });

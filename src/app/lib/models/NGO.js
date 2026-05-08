@@ -54,7 +54,11 @@ const NGOSchema = new Schema({
     type: String,
     enum: ['pending', 'approved', 'rejected' , 'suspend'],
     default: 'pending'
-  }
+  },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
 }, {
   timestamps: true,
 });

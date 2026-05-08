@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/app/lib/mongodb";
 import User from "@/app/lib/models/User";
-import { adminAuth } from "@/app/lib/firebaseAdmin"; // Import Firebase Admin SDK
+import OtpVerification from "@/app/lib/models/OtpVerification";
+import sendOtpEmail from "@/app/lib/sendEmail";
+import { generateOtp, hashOtp } from "@/app/lib/otp";
 
 /**
  * Handles POST requests for user registration (Sign Up).
+ * Creates the user, sends OTP, and returns requiresOtp: true.
+ * Firebase sign-in is completed only after OTP is verified.
  */
 export async function POST(request) {
   try {
@@ -31,20 +35,33 @@ export async function POST(request) {
       return NextResponse.json({ message: "User with this email or username already exists." }, { status: 409 });
     }
 
-    // Create the new user
-    const newUser = await User.create({ email, username, password, role });
-    
-    // Generate a Firebase Custom Token using the MongoDB _id as uid
-    const firebaseUid = newUser._id.toString();
-    const customToken = await adminAuth.createCustomToken(firebaseUid, {
-      role: newUser.role,
-      mongoId: firebaseUid
+    // Create the new user (isVerified defaults to false)
+    await User.create({ email, username, password, role });
+
+    // Generate and send OTP
+    const normalizedEmail = email.toLowerCase().trim();
+    const otp = generateOtp();
+    const otpHash = hashOtp(normalizedEmail, otp);
+
+    // Remove any existing unused OTPs for this email
+    await OtpVerification.deleteMany({ email: normalizedEmail, isUsed: false });
+
+    // Save new OTP record (expires in 5 minutes)
+    await OtpVerification.create({
+      email: normalizedEmail,
+      otpHash,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
+    const result = await sendOtpEmail(normalizedEmail, otp);
+    if (!result.success) {
+      return NextResponse.json({ message: "User created but failed to send OTP email." }, { status: 500 });
+    }
+
     return NextResponse.json({ 
-      message: "User registered successfully", 
-      userId: firebaseUid,
-      customToken: customToken
+      message: "User registered successfully. Please verify your email.",
+      requiresOtp: true,
+      email: normalizedEmail,
     }, { status: 201 });
 
   } catch (error) {

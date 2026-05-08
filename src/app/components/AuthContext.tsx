@@ -31,13 +31,20 @@ interface AuthContextType {
   currentUser: EnrichedUser | null;
   loading: boolean;
   error: string | null;
+  auth: Auth | null;
   signUp: (params: { email: string; username: string; password: string; role: string }) => Promise<{
     success: boolean;
     message?: string;
+    requiresOtp?: boolean;
+    email?: string;
+    role?: string;
   }>;
   login: (params: { email: string; password: string, role: string }) => Promise<{
     success: boolean;
     message?: string;
+    requiresOtp?: boolean;
+    email?: string;
+    role?: string;
   }>;
   signOut: () => Promise<void>;
 }
@@ -54,6 +61,7 @@ const initialContextValue: AuthContextType = {
   currentUser: null,
   loading: true,
   error: null,
+  auth: null,
   signUp: async () => ({ success: false, message: "Auth not initialized." }),
   login: async () => ({ success: false, message: "Auth not initialized." }),
   signOut: async () => { },
@@ -150,7 +158,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     return () => unsubscribe();
   }, [auth, enrichUserProfile]);
-  // inside AuthProvider component
+
+  // ---------------------------------------------------
+  // SIGN UP
+  // ---------------------------------------------------
 
   const signUp = useCallback(
     async ({ email, username, password, role }: { email: string; username: string; password: string; role: string }) => {
@@ -163,7 +174,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         let response;
 
         if (role === "user" || role === "admin") {
-          // Call existing auth API for users/admins
           response = await axios.post("/api/auth/signup", {
             email,
             username,
@@ -171,9 +181,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             role,
           });
         } else if (role === "ngo") {
-          // Call NGO signup API which accepts name, email, password
           response = await axios.post("/api/ngo/signup", {
-            name: username, // assuming username is NGO name here
+            name: username,
             email,
             password,
           });
@@ -181,13 +190,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return { success: false, message: "Invalid role specified." };
         }
 
-        // For NGO signup, you may need a second step to sign in after approval,
-        // so here let's assume signup response for NGOs doesn't issue token immediately.
-        if ((role === "user" || role === "admin") && response.status === 201 && response.data.customToken) {
-          await signInWithCustomToken(auth, response.data.customToken);
-          return { success: true };
-        } else if (role === "ngo" && response.status === 201) {
-          return { success: true, message: "NGO registered successfully. Await admin approval." };
+        // Both signup routes now return requiresOtp: true
+        if (response.data.requiresOtp) {
+          return {
+            success: true,
+            requiresOtp: true,
+            email: response.data.email || email,
+            role,
+          };
         }
 
         return {
@@ -208,6 +218,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     [auth]
   );
 
+  // ---------------------------------------------------
+  // LOGIN
+  // ---------------------------------------------------
 
   const login = useCallback(
     async ({ email, password, role }: { email: string; password: string, role: string }) => {
@@ -219,20 +232,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         let response;
 
-        if (role != "ngo") {
+        if (role !== "ngo") {
           response = await axios.post("/api/auth/login", { email, password });
-
-          if (response.status === 200 && response.data.customToken) {
-            await signInWithCustomToken(auth, response.data.customToken);
-            return { success: true };
-          }
         } else {
           response = await axios.post("/api/ngo/signin", { email, password });
+        }
 
-          if (response.status === 200 && response.data.customToken) {
-            await signInWithCustomToken(auth, response.data.customToken);
-            return { success: true };
-          }
+        // Account verified — complete Firebase sign-in
+        if (response.data.customToken) {
+          await signInWithCustomToken(auth, response.data.customToken);
+          return { success: true };
+        }
+
+        // Account not verified — redirect to OTP page
+        if (response.data.requiresOtp) {
+          return {
+            success: true,
+            requiresOtp: true,
+            email: response.data.email || email,
+            role,
+          };
         }
 
         return {
@@ -252,8 +271,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     },
     [auth]
   );
-
-
 
   // ---------------------------------------------------
   // SIGN OUT
@@ -279,6 +296,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     currentUser,
     loading,
     error,
+    auth,
     signUp,
     login,
     signOut,

@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/app/lib/mongodb";
 import User from "@/app/lib/models/User"; 
-import { adminAuth } from "@/app/lib/firebaseAdmin";
+import OtpVerification from "@/app/lib/models/OtpVerification";
+import sendOtpEmail from "@/app/lib/sendEmail";
+import { generateOtp, hashOtp } from "@/app/lib/otp";
 
 /**
  * Handles POST requests for user login (Sign In).
- * Checks MongoDB credentials and issues a Firebase Custom Token.
+ * Checks MongoDB credentials.
+ * - If isVerified is false: sends a fresh OTP and asks frontend to verify.
+ * - If isVerified is true: issues a Firebase Custom Token.
  */
 export async function POST(request) {
   try {
@@ -17,26 +21,36 @@ export async function POST(request) {
       return NextResponse.json({ message: "Email and password are required." }, { status: 400 });
     }
 
-    // 1. Find the user by email in MongoDB, explicitly select password field
+    // Find the user by email in MongoDB, explicitly select password field
     const user = await User.findOne({ email }).select('+password');
 
-    // 2. Check if user exists and password is correct
+    // Check if user exists and password is correct
     if (!user || !(await user.comparePassword(password))) {
       return NextResponse.json({ message: "Invalid credentials." }, { status: 401 });
     }
 
-    // No NGO status check needed because only 'user' and 'admin' roles exist now
+    const normalizedEmail = email.toLowerCase().trim();
 
-    // 3. Generate Firebase Custom Token
-    const firebaseUid = user._id.toString();
-    const customToken = await adminAuth.createCustomToken(firebaseUid, {
-      role: user.role,
-      mongoId: firebaseUid
+    // Always send OTP on every login attempt
+    const otp = generateOtp();
+    const otpHash = hashOtp(normalizedEmail, otp);
+
+    await OtpVerification.deleteMany({ email: normalizedEmail, isUsed: false });
+    await OtpVerification.create({
+      email: normalizedEmail,
+      otpHash,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
     });
 
-    return NextResponse.json({ 
-      message: "Login successful", 
-      customToken: customToken 
+    const result = await sendOtpEmail(normalizedEmail, otp);
+    if (!result.success) {
+      return NextResponse.json({ message: "Failed to send OTP email." }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      message: "OTP sent to your email. Please verify to complete login.",
+      requiresOtp: true,
+      email: normalizedEmail,
     }, { status: 200 });
 
   } catch (error) {

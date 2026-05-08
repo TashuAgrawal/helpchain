@@ -54,7 +54,12 @@ const SignUpForm = () => {
     try {
       // Pass role also here to signUp
       const result = await signUp({ email, username: name, password, role });
-      if (result.success) {
+      if (result.requiresOtp) {
+        // Redirect to OTP verification page
+        router.push(
+          `/verify-otp?email=${encodeURIComponent(result.email || email)}&role=${encodeURIComponent(result.role || role)}&context=signup`
+        );
+      } else if (result.success) {
         router.push("/");
       } else {
         setError(result.message || "Signup failed, please try again.");
