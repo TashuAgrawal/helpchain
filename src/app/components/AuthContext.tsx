@@ -117,7 +117,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             Authorization: `Bearer ${token}`,
           },
         });
-        localStorage.setItem("user" , JSON.stringify(response?.data));
+        localStorage.setItem("user", JSON.stringify(response?.data));
 
         if (response.status === 200 && response.data.user) {
           return { ...firebaseUser, ...response.data.user };
@@ -279,6 +279,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signOut = useCallback(async () => {
     if (auth) {
       try {
+        localStorage.removeItem('user');
         await firebaseSignOut(auth);
         setCurrentUser(null);
       } catch (err) {

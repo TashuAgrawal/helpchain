@@ -53,7 +53,7 @@ export function NGODashboard() {
 
   const [donorFeedback, setDonorFeedback] = useState<DonorFeedback[]>([]);
 
-  let ngoId:string;
+  let ngoId: string = '';
   const userStr = localStorage.getItem("user");
   if (userStr) {
     const userObj = JSON.parse(userStr);
@@ -354,7 +354,7 @@ export function NGODashboard() {
 
       const data = {
         usermail: email,
-        ngoId:ngoId,
+        ngoId: ngoId,
         role: role
       }
       const result = await addMember(data);
