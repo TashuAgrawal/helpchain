@@ -1,5 +1,5 @@
 "use client";
-import { Building2, DollarSign, FileText, LayoutDashboard, Users, LogOut } from 'lucide-react'
+import { AlertTriangle, Building2, DollarSign, FileText, LayoutDashboard, Users, LogOut } from 'lucide-react'
 import React from 'react'
 import { Button } from '../../ui/button'
 import { Badge } from '../../ui/badge'  // ensure you have Badge component imported
@@ -8,6 +8,7 @@ interface SidebarProps {
   setActiveTab: (tab: string) => void;
   activeTab: string;
   pendingNGOs?: { length: number };
+  pendingStrikes?: number;
 }
 
 
@@ -17,7 +18,8 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({
   setActiveTab,
   activeTab,
-  pendingNGOs = []
+  pendingNGOs = [],
+  pendingStrikes = 0,
 }) => {
 
   const logout=()=>{
@@ -70,6 +72,16 @@ const Sidebar: React.FC<SidebarProps> = ({
               }`}
           >
             <FileText className="w-5 h-5" /> <span>Reports</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("strikes")}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === "strikes" ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              }`}
+          >
+            <AlertTriangle className="w-5 h-5" /> <span>Strikes</span>
+            {pendingStrikes > 0 && (
+              <Badge className="ml-auto bg-red-500 dark:bg-red-600">{pendingStrikes}</Badge>
+            )}
           </button>
         </nav>
       </div>

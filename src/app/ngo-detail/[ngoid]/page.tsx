@@ -4,7 +4,8 @@
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Campaign } from "@/app/components/Dashboard/Ngo/types";
-import { FileText, Heart, Calendar, Star, UserPlus, DollarSign } from "lucide-react";
+import { FileText, Heart, Calendar, Star, UserPlus, DollarSign, AlertTriangle } from "lucide-react";
+import StrikeModal from "@/app/components/StrikeModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Badge } from "@/app/components/ui/badge";
@@ -38,6 +39,9 @@ export default function NGOPage() {
     const [isDonating, setIsDonating] = useState(false);
     const [isFollowing, setIsFollowing] = useState(false);
     const [followerCount, setFollowerCount] = useState(1247);
+    // Strike modal state
+    const [isStrikeOpen, setIsStrikeOpen] = useState(false);
+    const [strikeCampaign, setStrikeCampaign] = useState<Campaign | null>(null);
 
     const navLinks = [
         { label: "Explore NGOs", href: "#explore" },
@@ -63,6 +67,7 @@ export default function NGOPage() {
                 startDate: c.startDate,
                 ngoId: c.ngoId,
                 endDate: c.endDate,
+                isStruck: c.isStruck ?? false,
             }));
 
             setCampaigns(formatted);
@@ -461,13 +466,32 @@ export default function NGOPage() {
                                         </p>
                                     </div>
 
-                                    <Button
-                                        className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500"
-                                        onClick={() => handleDonate(c)}
-                                    >
-                                        <Heart className="w-4 h-4 mr-1" />
-                                        Donate Now
-                                    </Button>
+                                    {/* Struck banner */}
+                                    {(c as any).isStruck && (
+                                        <div className="flex items-center gap-2 bg-red-900/30 border border-red-700/50 rounded-lg px-3 py-2">
+                                            <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                                            <p className="text-red-300 text-xs font-medium">This campaign is currently under review and cannot accept donations.</p>
+                                        </div>
+                                    )}
+
+                                    <div className="flex gap-2">
+                                        <Button
+                                            className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 disabled:opacity-50"
+                                            onClick={() => handleDonate(c)}
+                                            disabled={(c as any).isStruck}
+                                        >
+                                            <Heart className="w-4 h-4 mr-1" />
+                                            {(c as any).isStruck ? "Locked" : "Donate Now"}
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            className="border-red-800/60 text-red-400 hover:bg-red-900/20 hover:text-red-300 px-3"
+                                            title="Report a strike against this campaign"
+                                            onClick={() => { setStrikeCampaign(c); setIsStrikeOpen(true); }}
+                                        >
+                                            <AlertTriangle className="w-4 h-4" />
+                                        </Button>
+                                    </div>
                                 </CardContent>
                             </Card>
                         );
@@ -480,6 +504,16 @@ export default function NGOPage() {
                     )}
                 </div>
             </div>
+
+            {/* Strike Modal */}
+            {strikeCampaign && (
+                <StrikeModal
+                    isOpen={isStrikeOpen}
+                    onClose={() => { setIsStrikeOpen(false); setStrikeCampaign(null); }}
+                    campaignId={strikeCampaign.id}
+                    campaignTitle={strikeCampaign.title}
+                />
+            )}
         </div>
     );
 }

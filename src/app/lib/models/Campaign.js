@@ -50,6 +50,13 @@ const CampaignSchema = new Schema(
       type: String,
       required: true,
     },
+    // Set to true when an admin accepts a strike against this campaign.
+    // While true, the campaign cannot accept donations or any new data.
+    isStruck: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,

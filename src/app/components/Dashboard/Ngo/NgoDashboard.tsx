@@ -19,6 +19,7 @@ import { getUserById } from "@/Helper/NgoServices/GetUser";
 import { fetchFeedbackByNgo } from "@/Helper/NgoServices/GetAllFeedback";
 import addFeedbackReply from "@/Helper/NgoServices/AddFeedbackReply"
 import addMember from "@/Helper/NgoServices/AddMember"
+import { NgoStrikes } from "./NgoStrikes"
 
 
 export function NGODashboard() {
@@ -390,12 +391,13 @@ export function NGODashboard() {
       < NgoNavbar links={navLinks} userName="Clean Water Initiative" />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 dark:bg-gray-800">
+          <TabsList className="grid w-full grid-cols-6 dark:bg-gray-800">
             <TabsTrigger value="dashboard" className="dark:data-[state=active]:bg-gray-700">Dashboard</TabsTrigger>
             <TabsTrigger value="campaigns" className="dark:data-[state=active]:bg-gray-700">Campaigns</TabsTrigger>
             <TabsTrigger value="donors" className="dark:data-[state=active]:bg-gray-700">Donors</TabsTrigger>
             <TabsTrigger value="community" className="dark:data-[state=active]:bg-gray-700">Community</TabsTrigger>
             <TabsTrigger value="analytics" className="dark:data-[state=active]:bg-gray-700">Analytics</TabsTrigger>
+            <TabsTrigger value="strikes" className="dark:data-[state=active]:bg-gray-700 data-[state=active]:text-red-400">Strikes</TabsTrigger>
           </TabsList>
 
           {/* Dashboard Tab */}
@@ -496,6 +498,11 @@ export function NGODashboard() {
               handleEditUpdate={handleEditUpdate}
               handleDeleteUpdate={handleDeleteUpdate}
             />
+          </TabsContent>
+
+          {/* Strikes Tab */}
+          <TabsContent value="strikes" className="space-y-6">
+            <NgoStrikes ngoId={ngoId} />
           </TabsContent>
         </Tabs>
       </main>

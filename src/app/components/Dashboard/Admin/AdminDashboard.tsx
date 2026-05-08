@@ -31,6 +31,9 @@ import fetchAllUsers from "@/Helper/AdminServices/Allusers"
 import fetchAllTransactions from "@/Helper/AdminServices/GetAllTransaction"
 import { getUserById } from "@/Helper/NgoServices/GetUser";
 import FetchAllFeedbacks from "@/Helper/AdminServices/FetchAllFeedbacks";
+import AdminStrikes from "./AdminStrikes";
+import axios from "axios";
+import { getAuth } from "firebase/auth";
 
 interface PendingNGO {
   id: number;
@@ -92,6 +95,7 @@ export function AdminDashboard() {
   const [activeNGOs, setActiveNGOs] = useState<ActiveNGO[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [allTransactions, setAllTransactions] = useState<Transaction[]>([]);
+  const [pendingStrikesCount, setPendingStrikesCount] = useState(0);
   const [userFeedbacks] = useState( [
     { user: "John Doe", feedback: "The donation impact update was great!", time: "1 hour ago", rating: 5 },
     { user: "Priya Sinha", feedback: "Would love more frequent updates from NGOs.", time: "Yesterday", rating: 4 },
@@ -206,7 +210,18 @@ export function AdminDashboard() {
 
 
       const allfeedback = await FetchAllFeedbacks();
-      
+
+      // Fetch pending strikes count for the sidebar badge
+      try {
+        const auth = getAuth();
+        const token = await auth.currentUser?.getIdToken();
+        if (token) {
+          const strikesRes = await axios.get("/api/strikes?status=pending", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setPendingStrikesCount(strikesRes.data.strikes?.length ?? 0);
+        }
+      } catch {}
 
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -311,6 +326,7 @@ export function AdminDashboard() {
         setActiveTab={setActiveTab}
         activeTab={activeTab}
         pendingNGOs={pendingNGOs}
+        pendingStrikes={pendingStrikesCount}
       />
       <main className="ml-64 flex-1 p-8">
         {activeTab === "dashboard" && (
@@ -382,6 +398,9 @@ export function AdminDashboard() {
             />
             <TransactionsTable filteredTransactions={filteredTransactions} />
           </div>
+        )}
+        {activeTab === "strikes" && (
+          <AdminStrikes />
         )}
         {activeTab === "reports" && (
           <div>
