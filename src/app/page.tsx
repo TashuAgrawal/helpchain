@@ -26,9 +26,6 @@ export default function Home() {
       const userString = localStorage.getItem('user');
       if (userString) {
         const user = JSON.parse(userString);
-        console.log('Parsed user:', user);
-
-        console.log(user.user.role);
         
         
         if (user.user.role && (user.user.role === 'user' || user.user.role === 'admin' )) {
@@ -46,7 +43,6 @@ export default function Home() {
   // Conditional routing function
   const handleDashboardRedirect = () => {
     const role = getUserRole();
-    console.log(role);
     if (role === 'user') {
       router.push('/users/dashboard');
     } else if (role === 'admin') {

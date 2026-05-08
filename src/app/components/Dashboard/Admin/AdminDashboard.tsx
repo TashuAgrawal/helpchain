@@ -206,7 +206,6 @@ export function AdminDashboard() {
 
 
       const allfeedback = await FetchAllFeedbacks();
-      console.log(allfeedback);
       
 
     } catch (err) {

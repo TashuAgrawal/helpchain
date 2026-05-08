@@ -11,11 +11,7 @@ export async function POST(request) {
   try {
     await connectDB();
 
-   
-
-    console.log(456)
     const { ngoId, action } = await request.json();
-     console.log(ngoId , action);
 
     if (!ngoId) {
       return NextResponse.json({ message: "ngoId is required." }, { status: 400 });
@@ -27,7 +23,6 @@ export async function POST(request) {
 
     // Find the NGO user by ID and role = 'ngo'
     const ngo = await NGO.findOne({ _id: ngoId });
-    console.log(ngo);
     if (!ngo) {
       return NextResponse.json({ message: "NGO not found." }, { status: 404 });
     }

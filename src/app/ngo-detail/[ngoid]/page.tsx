@@ -80,7 +80,7 @@ export default function NGOPage() {
             setRating(previousRating);
 
             const followresult = await CheckFollowing(userId , ngoid);
-            console.log(followresult);
+
 
             setFollowerCount(followresult.followerCount);
             setIsFollowing(followresult.isFollowing)
@@ -115,7 +115,6 @@ export default function NGOPage() {
                 setIsFollowing(!isFollowing);
                 setFollowerCount(followerCount + 1);
             }
-            console.log(response);
 
             toast.success(
                 response.data.action === 'followed'
@@ -208,10 +207,6 @@ export default function NGOPage() {
                 campaignId:selectedCampaign.id, amount:amount
             });
 
-            console.log(temp);
-
-            console.log(result);
-
             // ✅ UPDATE LOCAL CAMPAIGN STATE (no refetch)
             setCampaigns((prevCampaigns) =>
                 prevCampaigns.map((campaign) =>
@@ -242,7 +237,7 @@ export default function NGOPage() {
 
     return (
         <div className="dark:bg-gray-900 min-h-screen">
-            <UserNavbar links={navLinks} userName="User" />
+            <UserNavbar links={navLinks} userName="User" userId={ngoid} />
 
             <div className="max-w-6xl mx-auto py-8 px-4">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4">

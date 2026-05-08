@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 // Get the MongoDB URI from environment variables
 const MONGODB_URI = process.env.MONGODB_URI;
 
-console.log("🔍 MongoDB URI:", MONGODB_URI);
 // Check if the URI is set
 if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable in .env.local");
@@ -23,7 +22,6 @@ if (!cachedConnection) {
 export async function connectDB() {
   // If a connection already exists, return it
   if (cachedConnection.conn) {
-    console.log("✅ MongoDB: Using existing connection.");
     return cachedConnection.conn;
   }
 
@@ -47,7 +45,6 @@ export async function connectDB() {
   try {
     const db = await cachedConnection.promise;
     cachedConnection.conn = db.connection;
-    console.log("✅ MongoDB: New connection established.");
     return db.connection;
   } catch (err) {
     cachedConnection.promise = null; // Reset promise on failure

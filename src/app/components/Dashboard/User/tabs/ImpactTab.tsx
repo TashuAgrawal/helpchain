@@ -71,9 +71,7 @@ export function ImpactTab({
 
       if (exists) {
         setisvolunteer(true);
-        console.log("✅ Already a volunteer");
       } else {
-        console.log("❌ Not a volunteer");
       }
     };
 
@@ -81,8 +79,7 @@ export function ImpactTab({
   }, [userId]);
 
   const handleVolunteerAction = async (userId: string, pincode?: string) => {
-      console.log("UserId:", userId, "Pincode:", pincode);
-      // 👉 later you can call backend here4
+
 
 
       try {
@@ -94,7 +91,6 @@ export function ImpactTab({
           toast.error(res.message);
         }
       } catch (error) {
-        console.log(error);
         toast.error("An error occurred while updating volunteer status.");
       }
     };

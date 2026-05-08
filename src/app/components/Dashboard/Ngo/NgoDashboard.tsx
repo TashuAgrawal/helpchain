@@ -139,7 +139,6 @@ export function NGODashboard() {
         setaverageRating(avgrate.averageRating);
 
         const feedbackResult = await fetchFeedbackByNgo(ngoId);
-        console.log("Feedback result:", feedbackResult);
 
         const mappedFeedback: DonorFeedback[] = feedbackResult.data.feedback.map((fb: any, index: number) => ({
           id: index + 1,
@@ -323,7 +322,6 @@ export function NGODashboard() {
         reply: text // Or your state variable for the reply text
       };
 
-      console.log(data);
 
 
       await addFeedbackReply(data);
@@ -350,7 +348,6 @@ export function NGODashboard() {
   };
   const handleAddTeamMember = async (email: string, role: string) => {
 
-    console.log(email, role);
 
     try {
 

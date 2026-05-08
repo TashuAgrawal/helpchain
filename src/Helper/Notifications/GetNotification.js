@@ -2,7 +2,9 @@ import axios from "axios";
 
 async function getUserNotifications(userId) {
   try {
+    console.log("Fetching notifications for userId:", userId);
     const { data } = await axios.get(`/api/notifications/${userId}`);
+    
 
     return data;
   } catch (error) {

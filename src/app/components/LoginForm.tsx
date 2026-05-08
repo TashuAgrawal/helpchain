@@ -22,7 +22,6 @@ const LoginForm = () => {
     try {
       const result = await login({ email, password, role });
       if (result.success) {
-        console.log("Login successful. Redirecting.");
         router.push("/");
       }
     } catch (error) {

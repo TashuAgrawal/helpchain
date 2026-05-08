@@ -58,7 +58,6 @@ export async function POST(request) {
             role: role
         });
 
-        console.log(newMember);
         
         return NextResponse.json(
             {

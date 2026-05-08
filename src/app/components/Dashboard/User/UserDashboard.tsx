@@ -13,22 +13,26 @@ import { RecurringDialog } from "./dialogs/RecurringDialog";
 import { CompareDialog } from "./dialogs/CompareDialog";
 import { PostProblemDialog } from "./dialogs/PostProblemDialog";
 import { DonationGoalDialog } from "./dialogs/DonationGoalDialog";
-import fetchAllCampaigns from "@/Helper/UserServices/GetAllCampaigns"
-import fetchApprovedNgos from "@/Helper/AdminServices/Approvedngos"
-import postCommunityProblem from "@/Helper/UserServices/PostProblem"
-import fetchAllCommunityProblems from "@/Helper/NgoServices/GetAllProblems"
-import toggleBookmark from "@/Helper/UserServices/ToggleBookmark"
-import addTransaction from "@/Helper/UserServices/AddTransactions"
-import fetchUserTransactionsById from "@/Helper/UserServices/GetMyTransactions"
-import fetchBookmarkedNGOs from "@/Helper/UserServices/Getmybookmarks"
-import toggleProblemUpvote from "@/Helper/UserServices/UpvoteProblem"
-import fetchUpvotedProblems from "@/Helper/UserServices/GetmyupvotedProblems"
+import fetchAllCampaigns from "@/Helper/UserServices/GetAllCampaigns";
+import fetchApprovedNgos from "@/Helper/AdminServices/Approvedngos";
+import postCommunityProblem from "@/Helper/UserServices/PostProblem";
+import fetchAllCommunityProblems from "@/Helper/NgoServices/GetAllProblems";
+import toggleBookmark from "@/Helper/UserServices/ToggleBookmark";
+import addTransaction from "@/Helper/UserServices/AddTransactions";
+import fetchUserTransactionsById from "@/Helper/UserServices/GetMyTransactions";
+import fetchBookmarkedNGOs from "@/Helper/UserServices/Getmybookmarks";
+import toggleProblemUpvote from "@/Helper/UserServices/UpvoteProblem";
+import fetchUpvotedProblems from "@/Helper/UserServices/GetmyupvotedProblems";
 
 const userBadgesList: UserBadge[] = [
   {
     id: 1,
     name: "Bronze Supporter",
-    icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.392 4.278a1 1 0 00.95.69h4.505c.969 0 1.371 1.24.588 1.81l-3.647 2.64a1 1 0 00-.364 1.118l1.392 4.278c.3.92-.755 1.688-1.538 1.118l-3.647-2.64a1 1 0 00-1.176 0l-3.647 2.64c-.783.57-1.838-.197-1.538-1.118l1.392-4.278a1 1 0 00-.364-1.118L2.623 9.705c-.783-.57-.38-1.81.588-1.81h4.505a1 1 0 00.95-.69l1.392-4.278z" /></svg>,
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.392 4.278a1 1 0 00.95.69h4.505c.969 0 1.371 1.24.588 1.81l-3.647 2.64a1 1 0 00-.364 1.118l1.392 4.278c.3.92-.755 1.688-1.538 1.118l-3.647-2.64a1 1 0 00-1.176 0l-3.647 2.64c-.783.57-1.838-.197-1.538-1.118l1.392-4.278a1 1 0 00-.364-1.118L2.623 9.705c-.783-.57-.38-1.81.588-1.81h4.505a1 1 0 00.95-.69l1.392-4.278z" />
+      </svg>
+    ),
     threshold: 100,
     description: "Donated at least ₹100",
     colorClass: "text-orange-600 dark:text-orange-400",
@@ -36,7 +40,11 @@ const userBadgesList: UserBadge[] = [
   {
     id: 2,
     name: "Silver Supporter",
-    icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.392 4.278a1 1 0 00.95.69h4.505c.969 0 1.371 1.24.588 1.81l-3.647 2.64a1 1 0 00-.364 1.118l1.392 4.278c.3.92-.755 1.688-1.538 1.118l-3.647-2.64a1 1 0 00-1.176 0l-3.647 2.64c-.783.57-1.838-.197-1.538-1.118l1.392-4.278a1 1 0 00-.364-1.118L2.623 9.705c-.783-.57-.38-1.81.588-1.81h4.505a1 1 0 00.95-.69l1.392-4.278z" /></svg>,
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.392 4.278a1 1 0 00.95.69h4.505c.969 0 1.371 1.24.588 1.81l-3.647 2.64a1 1 0 00-.364 1.118l1.392 4.278c.3.92-.755 1.688-1.538 1.118l-3.647-2.64a1 1 0 00-1.176 0l-3.647 2.64c-.783.57-1.838-.197-1.538-1.118l1.392-4.278a1 1 0 00-.364-1.118L2.623 9.705c-.783-.57-.38-1.81.588-1.81h4.505a1 1 0 00.95-.69l1.392-4.278z" />
+      </svg>
+    ),
     threshold: 500,
     description: "Donated at least ₹500",
     colorClass: "text-gray-500 dark:text-gray-400",
@@ -44,7 +52,11 @@ const userBadgesList: UserBadge[] = [
   {
     id: 3,
     name: "Gold Supporter",
-    icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.392 4.278a1 1 0 00.95.69h4.505c.969 0 1.371 1.24.588 1.81l-3.647 2.64a1 1 0 00-.364 1.118l1.392 4.278c.3.92-.755 1.688-1.538 1.118l-3.647-2.64a1 1 0 00-1.176 0l-3.647 2.64c-.783.57-1.838-.197-1.538-1.118l1.392-4.278a1 1 0 00-.364-1.118L2.623 9.705c-.783-.57-.38-1.81.588-1.81h4.505a1 1 0 00.95-.69l1.392-4.278z" /></svg>,
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.392 4.278a1 1 0 00.95.69h4.505c.969 0 1.371 1.24.588 1.81l-3.647 2.64a1 1 0 00-.364 1.118l1.392 4.278c.3.92-.755 1.688-1.538 1.118l-3.647-2.64a1 1 0 00-1.176 0l-3.647 2.64c-.783.57-1.838-.197-1.538-1.118l1.392-4.278a1 1 0 00-.364-1.118L2.623 9.705c-.783-.57-.38-1.81.588-1.81h4.505a1 1 0 00.95-.69l1.392-4.278z" />
+      </svg>
+    ),
     threshold: 1000,
     description: "Donated ₹1000 or more",
     colorClass: "text-yellow-500 dark:text-yellow-400",
@@ -52,7 +64,11 @@ const userBadgesList: UserBadge[] = [
   {
     id: 4,
     name: "Platinum Supporter",
-    icon: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.392 4.278a1 1 0 00.95.69h4.505c.969 0 1.371 1.24.588 1.81l-3.647 2.64a1 1 0 00-.364 1.118l1.392 4.278c.3.92-.755 1.688-1.538 1.118l-3.647-2.64a1 1 0 00-1.176 0l-3.647 2.64c-.783.57-1.838-.197-1.538-1.118l1.392-4.278a1 1 0 00-.364-1.118L2.623 9.705c-.783-.57-.38-1.81.588-1.81h4.505a1 1 0 00.95-.69l1.392-4.278z" /></svg>,
+    icon: (
+      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.392 4.278a1 1 0 00.95.69h4.505c.969 0 1.371 1.24.588 1.81l-3.647 2.64a1 1 0 00-.364 1.118l1.392 4.278c.3.92-.755 1.688-1.538 1.118l-3.647-2.64a1 1 0 00-1.176 0l-3.647 2.64c-.783.57-1.838-.197-1.538-1.118l1.392-4.278a1 1 0 00-.364-1.118L2.623 9.705c-.783-.57-.38-1.81.588-1.81h4.505a1 1 0 00.95-.69l1.392-4.278z" />
+      </svg>
+    ),
     threshold: 5000,
     description: "Donated ₹5000 or more - Elite Donor!",
     colorClass: "text-purple-600 dark:text-purple-400",
@@ -60,7 +76,6 @@ const userBadgesList: UserBadge[] = [
 ];
 
 const UserDashboard = () => {
-
   const [selectedTab, setSelectedTab] = useState("explore");
   const [isDonateDialogOpen, setIsDonateDialogOpen] = useState(false);
   const [selectedNGO, setSelectedNGO] = useState<NGO | null>(null);
@@ -78,15 +93,27 @@ const UserDashboard = () => {
   const [recurringFrequency, setRecurringFrequency] = useState("monthly");
   const [isCompareDialogOpen, setIsCompareDialogOpen] = useState(false);
   const [compareNGOs, setCompareNGOs] = useState<NGO[]>([]);
-  const [isDonationGoalDialogOpen, setIsDonationGoalDialogOpen] = useState(false);
+  const [isDonationGoalDialogOpen, setIsDonationGoalDialogOpen] =
+    useState(false);
   const [donationGoalAmount, setDonationGoalAmount] = useState("");
   const [donationGoalDeadline, setDonationGoalDeadline] = useState("");
   const [activeNGOs, setActiveNGOs] = useState<NGO[]>([]);
-  const [communityProblems, setCommunityProblems] = useState<CommunityProblem[]>([]);
+  const [communityProblems, setCommunityProblems] = useState<
+    CommunityProblem[]
+  >([]);
   const [myDonations, setMyDonations] = useState<MyDonation[]>([]);
   const totalDonated = myDonations.reduce((sum, d) => sum + d.amount, 0);
-  const earnedBadges = userBadgesList.filter((b) => totalDonated >= b.threshold);
-  const favoriteNGOs = activeNGOs.filter(ngo => ngo.isFavorite);
+  const earnedBadges = userBadgesList.filter(
+    (b) => totalDonated >= b.threshold,
+  );
+  const favoriteNGOs = activeNGOs.filter((ngo) => ngo.isFavorite);
+
+  let userId="";
+  const userStr = localStorage.getItem("user");
+  if (userStr) {
+    const userObj = JSON.parse(userStr);
+    userId = userObj?.user.mongoId;
+  }
 
   useEffect(() => {
     async function fetchData() {
@@ -99,7 +126,6 @@ const UserDashboard = () => {
         }
 
         const result4 = await fetchBookmarkedNGOs(userId);
-        console.log(result4);
 
         const bookmarkedIds = new Set(result4);
 
@@ -114,41 +140,40 @@ const UserDashboard = () => {
           status: ngo.status,
           address: ngo.address,
           isFavorite: bookmarkedIds.has(ngo._id),
-          description: ngo.description
+          description: ngo.description,
         }));
-        console.log(mappedActiveNgos);
         setActiveNGOs(mappedActiveNgos);
 
         const result5 = await fetchUpvotedProblems(userId);
-         const upvotedIds = new Set(result5);
+        const upvotedIds = new Set(result5);
 
         const result2 = await fetchAllCommunityProblems();
-        const mappedProblems: CommunityProblem[] = result2.map((problem: any) => ({
-          id: problem._id,
-          title: problem.title,
-          description: problem.description,
-          category: problem.category,
-          postedBy: problem.postedBy,
-          date: problem.date,
-          location: problem.location,
-          responses: problem.responses,
-          upvotes: problem.upvotes,
-          userVoted: upvotedIds.has(problem._id),
-        }));
+        const mappedProblems: CommunityProblem[] = result2.map(
+          (problem: any) => ({
+            id: problem._id,
+            title: problem.title,
+            description: problem.description,
+            category: problem.category,
+            postedBy: problem.postedBy,
+            date: problem.date,
+            location: problem.location,
+            responses: problem.responses,
+            upvotes: problem.upvotes,
+            userVoted: upvotedIds.has(problem._id),
+          }),
+        );
         setCommunityProblems(mappedProblems);
         const result3 = await fetchUserTransactionsById(userId);
-        console.log(result3);
-        const mappedTransactions: MyDonation[] = result3.map((txn:any) => ({
-          id: txn._id, 
+        const mappedTransactions: MyDonation[] = result3.map((txn: any) => ({
+          id: txn._id,
           ngoName: "<Fetch NGO Name>",
           amount: txn.amount,
           date: txn.date,
-          status: "completed",       
-          category: "<Fetch Category>", 
-          impact: undefined,         
+          status: "completed",
+          category: "<Fetch Category>",
+          impact: undefined,
         }));
         setMyDonations(mappedTransactions);
-        
       } catch (err) {
         console.error("Error fetching NGOs:", err);
       }
@@ -177,7 +202,6 @@ const UserDashboard = () => {
       toast.error("Please enter a valid donation amount");
       return;
     }
-    console.log(selectedNGO);
     try {
       let userId;
       const userStr = localStorage.getItem("user");
@@ -190,9 +214,8 @@ const UserDashboard = () => {
         donor: userId,
         ngo: selectedNGO?.id,
         amount: parseInt(donationAmount),
-      })
+      });
 
-      console.log(result);
       const mappedDonation: MyDonation = {
         id: result.transaction._id,
         ngoName: selectedNGO?.name || "",
@@ -203,10 +226,10 @@ const UserDashboard = () => {
         impact: undefined,
       };
       setMyDonations([mappedDonation, ...myDonations]);
-    } catch (error) {
-
-    }
-    toast.success(`Successfully donated $${donationAmount} to ${selectedNGO?.name}!`);
+    } catch (error) {}
+    toast.success(
+      `Successfully donated $${donationAmount} to ${selectedNGO?.name}!`,
+    );
     setIsDonateDialogOpen(false);
     setDonationAmount("");
     setIsAnonymous(false);
@@ -217,7 +240,9 @@ const UserDashboard = () => {
       toast.error("Please enter a valid donation amount");
       return;
     }
-    toast.success(`Recurring ${recurringFrequency} donation of $${donationAmount} set up successfully!`);
+    toast.success(
+      `Recurring ${recurringFrequency} donation of $${donationAmount} set up successfully!`,
+    );
     setIsRecurringDialogOpen(false);
     setDonationAmount("");
   };
@@ -231,15 +256,12 @@ const UserDashboard = () => {
         userId = userObj?.user.mongoId;
       }
       const result = await toggleBookmark(userId, ngoId);
-      console.log(result);
       setActiveNGOs((prevNgos) =>
         prevNgos.map((ngo) =>
-          ngo.id === ngoId ? { ...ngo, isFavorite: result.bookmarked } : ngo
-        )
+          ngo.id === ngoId ? { ...ngo, isFavorite: result.bookmarked } : ngo,
+        ),
       );
-    } catch (error) {
-
-    }
+    } catch (error) {}
   };
 
   const handlePostProblem = async () => {
@@ -251,13 +273,6 @@ const UserDashboard = () => {
     ) {
       toast.error("Please fill in all fields");
       return;
-    }
-
-    let userId;
-    const userStr = localStorage.getItem("user");
-    if (userStr) {
-      const userObj = JSON.parse(userStr);
-      userId = userObj?.user.mongoId;
     }
 
     const newProblem: Omit<CommunityProblem, "id"> = {
@@ -300,32 +315,31 @@ const UserDashboard = () => {
   };
 
   const handleVoteProblem = async (problemId: string) => {
-
-
     try {
-        let userId;
-        const userStr = localStorage.getItem("user");
-        if (userStr) {
-          const userObj = JSON.parse(userStr);
-          userId = userObj?.user.mongoId;
-        }
-      const result = await toggleProblemUpvote(userId , problemId);
-      console.log(result);
-       setCommunityProblems(communityProblems.map(p =>
-      p.id === problemId
-        ? { ...p, upvotes: p.userVoted ? p.upvotes - 1 : p.upvotes + 1, userVoted: !p.userVoted }
-        : p
-    ));
-    } catch (error) {
-      
-    }
-
-   
+      let userId;
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const userObj = JSON.parse(userStr);
+        userId = userObj?.user.mongoId;
+      }
+      const result = await toggleProblemUpvote(userId, problemId);
+      setCommunityProblems(
+        communityProblems.map((p) =>
+          p.id === problemId
+            ? {
+                ...p,
+                upvotes: p.userVoted ? p.upvotes - 1 : p.upvotes + 1,
+                userVoted: !p.userVoted,
+              }
+            : p,
+        ),
+      );
+    } catch (error) {}
   };
 
   const handleAddToCompare = (ngo: NGO) => {
-    if (compareNGOs.find(n => n.id === ngo.id)) {
-      setCompareNGOs(compareNGOs.filter(n => n.id !== ngo.id));
+    if (compareNGOs.find((n) => n.id === ngo.id)) {
+      setCompareNGOs(compareNGOs.filter((n) => n.id !== ngo.id));
       toast.success("Removed from comparison");
     } else if (compareNGOs.length >= 3) {
       toast.error("You can compare maximum 3 NGOs");
@@ -354,15 +368,39 @@ const UserDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      <UserNavbar links={navLinks} userName="John Doe" />
+      <UserNavbar links={navLinks} userName="John Doe " userId={userId} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
+        <Tabs
+          value={selectedTab}
+          onValueChange={setSelectedTab}
+          className="space-y-6"
+        >
           <TabsList className="grid w-full grid-cols-4 dark:bg-gray-800">
-            <TabsTrigger value="explore" className="dark:data-[state=active]:bg-gray-700">Explore NGOs</TabsTrigger>
-            <TabsTrigger value="donations" className="dark:data-[state=active]:bg-gray-700">My Donations</TabsTrigger>
-            <TabsTrigger value="community" className="dark:data-[state=active]:bg-gray-700">Community</TabsTrigger>
-            <TabsTrigger value="impact" className="dark:data-[state=active]:bg-gray-700">My Impact</TabsTrigger>
+            <TabsTrigger
+              value="explore"
+              className="dark:data-[state=active]:bg-gray-700"
+            >
+              Explore NGOs
+            </TabsTrigger>
+            <TabsTrigger
+              value="donations"
+              className="dark:data-[state=active]:bg-gray-700"
+            >
+              My Donations
+            </TabsTrigger>
+            <TabsTrigger
+              value="community"
+              className="dark:data-[state=active]:bg-gray-700"
+            >
+              Community
+            </TabsTrigger>
+            <TabsTrigger
+              value="impact"
+              className="dark:data-[state=active]:bg-gray-700"
+            >
+              My Impact
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="explore">
@@ -467,6 +505,6 @@ const UserDashboard = () => {
       />
     </div>
   );
-}
+};
 
 export default UserDashboard;

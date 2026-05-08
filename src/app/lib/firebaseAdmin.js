@@ -51,8 +51,6 @@ const initializeAdmin = () => {
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
     });
-
-    console.log("✅ Firebase Admin SDK initialized successfully.");
     return admin.app();
 
   } catch (error) {

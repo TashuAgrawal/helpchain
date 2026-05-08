@@ -30,8 +30,6 @@ export async function GET() {
       ngoName: ngoMap[transaction.ngo] || 'Unknown NGO',
       ngoId: transaction.ngo
     }));
-
-    console.log(transactionsWithNGO);
     
 
     return NextResponse.json(transactionsWithNGO, { status: 200 });

@@ -113,7 +113,6 @@ export function CommunityTab({
       }
 
       const result = await addSolution(solutionData);
-      console.log('Solution saved:', result);
 
       // ✅ Add to local submitted list immediately
       setSubmittedProblemIds(prev => [...prev, problemId]);

@@ -110,8 +110,6 @@ export async function POST(request) {
       // 📊 Update request stats
       const volunteerIds = volunteers.map((v) => v.userId);
 
-      console.log("Updating requestsReceived for volunteers:", volunteerIds);
-
       await Volunteer.updateMany(
         { userId: { $in: volunteerIds } },
         { $inc: { requestsReceived: 1 } }
@@ -127,7 +125,6 @@ export async function POST(request) {
         isRead: false,
       }));
 
-      console.log("Creating notifications for volunteers:", volunteerNotifications);
 
       await Notification.insertMany(volunteerNotifications, {
         ordered: false,

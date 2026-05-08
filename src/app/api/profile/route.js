@@ -15,14 +15,11 @@ export async function GET(request) {
             return NextResponse.json({ message: "Service dependency error." }, { status: 500 });
         }
         await connectDB();
-        console.log("BYE");
         
         // 1. Get the Firebase ID Token from the client request headers
         const authHeader = request.headers.get('Authorization');
-console.log("hello");
         
         const token = authHeader?.split('Bearer ')[1];
-// console.log(token);
 
         if (!token) {
             return NextResponse.json({ message: "No authentication token provided." }, { status: 401 });
@@ -34,7 +31,6 @@ console.log("hello");
             // This is the correct method call on the imported adminAuth object.
             decodedToken = await adminAuth.verifyIdToken(token); 
 
-            console.log(decodedToken);
         } catch (authError) {
             console.error("Token verification failed:", authError.message);
             // Handle specific Firebase Admin errors gracefully
@@ -48,8 +44,7 @@ console.log("hello");
         // 4. Find the user profile in MongoDB (excluding the password hash)
         // Finding by email is robust as it's a field present in both Firebase and MongoDB.
         let userProfile = await User.findOne({ _id: user_id }).select('-password -__v'); 
-        console.log(userProfile);
-        
+
         if (!userProfile) {
             userProfile = await NGO.findOne({ _id: user_id }).select('-password -__v');
             if(!userProfile)
@@ -59,14 +54,6 @@ console.log("hello");
             }
         }
 
-        console.log({
-                email: userProfile.email,
-                username: userProfile.username,
-                role: userProfile.role, // Assuming 'role' is a field you want to return
-                mongoId: userProfile._id.toString(), // The MongoDB ID
-                uid: firebaseUid, // The Firebase UID
-            } );
-        
 
         // 5. Return the non-sensitive profile data
         return NextResponse.json({ 

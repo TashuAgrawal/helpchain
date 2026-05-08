@@ -20,8 +20,7 @@ export async function GET(request, { params }) {
     }
 
     const user = await User.findById(userId);
-    console.log(user);
-    
+
     
     if (!user) {
       return NextResponse.json(

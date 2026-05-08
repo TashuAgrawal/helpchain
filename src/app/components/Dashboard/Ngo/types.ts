@@ -12,7 +12,7 @@ export interface Campaign {
   startDate: string;
   endDate?: string;
   ngoId:string;
-  pincode:string;
+  pincode?:string;
 }
 
 export interface Donation {

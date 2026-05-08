@@ -22,7 +22,6 @@ export async function GET(request, { params }) {
       );
     }
 
-    console.log("ngoId from params:", ngoId);
 
     // ✅ CONVERT STRING TO OBJECTID
     const objectId = new mongoose.Types.ObjectId(ngoId);
