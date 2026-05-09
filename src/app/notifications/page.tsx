@@ -15,11 +15,14 @@ import {
   Clock,
   Filter,
   Loader2,
+  Trash2,
+  CheckSquare,
 } from "lucide-react";
 import getUserNotifications from "@/Helper/Notifications/GetNotification";
 import markNotificationAsRead from "@/Helper/Notifications/MarkAsRead";
 import markAllNotificationsRead from "@/Helper/Notifications/MarkAllRead";
 import acceptVolunteerRequest from "@/Helper/Voluteer/AcceptRequest";
+import { deleteSelectedNotifications, deleteAllNotifications } from "@/Helper/Notifications/DeleteNotification";
 import axios from "axios";
 
 // ─────────────────────────────────────────────
@@ -121,6 +124,9 @@ export default function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [markingAllRead, setMarkingAllRead] = useState(false);
   const [userId, setUserId] = useState<string>("");
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [deleting, setDeleting] = useState(false);
 
   // ── Fetch real volunteer status from CampaignVolunteer ──────────────
   const fetchVolunteerStatus = useCallback(
@@ -332,6 +338,57 @@ export default function NotificationsPage() {
     return true;
   });
 
+  // ── Deletion ─────────────────────────────────
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.length === filtered.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filtered.map((n) => n._id));
+    }
+  };
+
+  const handleDeleteSelected = async () => {
+    if (selectedIds.length === 0) return;
+    setDeleting(true);
+    try {
+      await deleteSelectedNotifications(selectedIds);
+      setNotifications((prev) => prev.filter((n) => !selectedIds.includes(n._id)));
+      
+      setUnreadCount((prev) => {
+        const deletedUnread = notifications.filter((n) => selectedIds.includes(n._id) && !n.isRead).length;
+        return Math.max(0, prev - deletedUnread);
+      });
+      setSelectedIds([]);
+      setIsSelectionMode(false);
+    } catch (err) {
+      console.error("Failed to delete selected:", err);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    if (!userId || notifications.length === 0) return;
+    setDeleting(true);
+    try {
+      await deleteAllNotifications(userId);
+      setNotifications([]);
+      setUnreadCount(0);
+      setSelectedIds([]);
+      setIsSelectionMode(false);
+    } catch (err) {
+      console.error("Failed to delete all:", err);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const filterTypes: FilterType[] = ["all", "unread", "campaign", "volunteer"];
 
   // ── Badge counts per filter ──────────────────
@@ -379,21 +436,71 @@ export default function NotificationsPage() {
               </div>
             </div>
 
-            {/* Mark all read */}
-            {unreadCount > 0 && (
-              <button
-                onClick={handleMarkAllRead}
-                disabled={markingAllRead}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 text-sm font-medium transition-all disabled:opacity-50"
-              >
-                {markingAllRead ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <CheckCheck className="w-4 h-4" />
-                )}
-                Mark all read
-              </button>
-            )}
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              {isSelectionMode ? (
+                <>
+                  <button
+                    onClick={toggleSelectAll}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 text-sm font-medium transition-all"
+                  >
+                    <CheckSquare className="w-4 h-4" />
+                    {selectedIds.length === filtered.length ? "Deselect All" : "Select All"}
+                  </button>
+                  <button
+                    onClick={handleDeleteSelected}
+                    disabled={deleting || selectedIds.length === 0}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-sm font-medium transition-all disabled:opacity-50"
+                  >
+                    {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    Delete ({selectedIds.length})
+                  </button>
+                  <button
+                    onClick={handleDeleteAll}
+                    disabled={deleting || notifications.length === 0}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-sm font-medium transition-all disabled:opacity-50"
+                  >
+                    {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    Delete All
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsSelectionMode(false);
+                      setSelectedIds([]);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 text-sm font-medium transition-all"
+                  >
+                    Cancel
+                  </button>
+                </>
+              ) : (
+                <>
+                  {notifications.length > 0 && (
+                    <button
+                      onClick={() => setIsSelectionMode(true)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 text-sm font-medium transition-all"
+                    >
+                      <CheckSquare className="w-4 h-4" />
+                      Select
+                    </button>
+                  )}
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={handleMarkAllRead}
+                      disabled={markingAllRead}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 text-sm font-medium transition-all disabled:opacity-50"
+                    >
+                      {markingAllRead ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <CheckCheck className="w-4 h-4" />
+                      )}
+                      Mark all read
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
           </div>
 
           {/* ── Filter Tabs ───────────────────── */}
@@ -476,8 +583,16 @@ export default function NotificationsPage() {
               <NotificationCard
                 key={notification._id}
                 notification={notification}
-                onClick={() => handleNotificationClick(notification)}
+                onClick={() => {
+                  if (isSelectionMode) {
+                    toggleSelection(notification._id);
+                  } else {
+                    handleNotificationClick(notification);
+                  }
+                }}
                 onVolunteerAction={handleVolunteerAction}
+                isSelectionMode={isSelectionMode}
+                isSelected={selectedIds.includes(notification._id)}
               />
             ))}
           </div>
@@ -494,6 +609,8 @@ function NotificationCard({
   notification,
   onClick,
   onVolunteerAction,
+  isSelectionMode,
+  isSelected,
 }: {
   notification: Notification;
   onClick: () => void;
@@ -501,6 +618,8 @@ function NotificationCard({
     n: Notification,
     action: "accepted" | "rejected"
   ) => void;
+  isSelectionMode?: boolean;
+  isSelected?: boolean;
 }) {
   const isVolunteerRequest = notification.type === "campaign_request";
   const isClickableLink =
@@ -513,7 +632,7 @@ function NotificationCard({
       className={`relative group rounded-xl border transition-all duration-200 ${notification.isRead
           ? "bg-[#161b27] border-white/[0.05] hover:border-white/[0.1]"
           : "bg-blue-950/20 border-blue-500/20 hover:border-blue-500/30 shadow-sm shadow-blue-500/5"
-        }`}
+        } ${isSelected ? "ring-2 ring-blue-500 bg-blue-500/10" : ""}`}
     >
       {/* Unread indicator bar */}
       {!notification.isRead && (
@@ -522,11 +641,26 @@ function NotificationCard({
 
       <div className="p-4">
         <div
-          className={`flex gap-3 ${isClickableLink ? "cursor-pointer" : ""}`}
-          onClick={isClickableLink || !isVolunteerRequest ? onClick : undefined}
+          className={`flex gap-3 ${isClickableLink || isSelectionMode ? "cursor-pointer" : ""}`}
+          onClick={isClickableLink || !isVolunteerRequest || isSelectionMode ? onClick : undefined}
         >
+          {/* Checkbox for selection mode */}
+          {isSelectionMode && (
+            <div className="flex items-center justify-center flex-shrink-0 pt-2">
+              <div
+                className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${
+                  isSelected
+                    ? "bg-blue-500 border-blue-500"
+                    : "border-gray-500 bg-transparent"
+                }`}
+              >
+                {isSelected && <CheckCheck className="w-3.5 h-3.5 text-white" />}
+              </div>
+            </div>
+          )}
+
           {/* Icon */}
-          {getNotificationIcon(notification.type)}
+          {!isSelectionMode && getNotificationIcon(notification.type)}
 
           {/* Body */}
           <div className="flex-1 min-w-0">
