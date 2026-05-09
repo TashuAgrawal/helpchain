@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/app/lib/mongodb";
 import Strike from "@/app/lib/models/Strike";
 import Campaign from "@/app/lib/models/Campaign";
+import NGO from "@/app/lib/models/NGO";
 import { adminAuth } from "@/app/lib/firebaseAdmin";
 
 /**
@@ -68,6 +69,22 @@ export async function PATCH(request, { params }) {
     // Lock the campaign if accepted
     if (action === "accept") {
       await Campaign.findByIdAndUpdate(strike.campaignId, { isStruck: true });
+
+      // Check total strikes for this NGO
+      const campaign = await Campaign.findById(strike.campaignId);
+      if (campaign && campaign.ngoId) {
+        const ngoCampaigns = await Campaign.find({ ngoId: campaign.ngoId }).select('_id');
+        const campaignIds = ngoCampaigns.map(c => c._id);
+        const totalNgoStrikes = await Strike.countDocuments({ 
+          campaignId: { $in: campaignIds }, 
+          status: "accepted" 
+        });
+
+        if (totalNgoStrikes >= 3) {
+          // Suspend the NGO
+          await NGO.findByIdAndUpdate(campaign.ngoId, { status: 'suspend' });
+        }
+      }
     }
 
     return NextResponse.json(

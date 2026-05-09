@@ -19,7 +19,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           rel="stylesheet"
         />
       </head>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased text-primary min-h-screen relative overflow-x-hidden bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-midnight to-obsidian">
+        {/* Antigravity Atmosphere Light Blooms */}
+        <div className="pointer-events-none fixed inset-0 z-[-1] overflow-hidden">
+          <div className="absolute -top-[20%] -left-[10%] w-[50vw] h-[50vw] rounded-full bg-electric-cyan/20 blur-[120px] animate-bloom-pulse mix-blend-screen" />
+          <div className="absolute top-[20%] -right-[10%] w-[40vw] h-[40vw] rounded-full bg-hyper-violet/20 blur-[120px] animate-bloom-pulse delay-1000 mix-blend-screen" />
+          <div className="absolute -bottom-[20%] left-[20%] w-[60vw] h-[60vw] rounded-full bg-electric-cyan/10 blur-[150px] animate-bloom-pulse delay-2000 mix-blend-screen" />
+        </div>
+
         <AuthProvider>
           {children}
         </AuthProvider>
@@ -27,11 +34,13 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           position="bottom-right"
           toastOptions={{
             style: {
-              background: '#1c2233',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: 'rgba(28, 34, 51, 0.4)',
+              backdropFilter: 'blur(15px)',
+              border: '1px solid rgba(255,255,255,0.05)',
               color: '#f0f4ff',
-              borderRadius: '12px',
+              borderRadius: '18px',
               fontSize: '0.875rem',
+              boxShadow: '0 4px 24px rgba(0, 240, 255, 0.1)',
             },
           }}
         />

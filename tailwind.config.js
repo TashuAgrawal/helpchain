@@ -15,10 +15,18 @@ module.exports = {
         background: 'var(--background)',
         surface: 'var(--bg-surface)',
         card: 'var(--bg-card)',
+        obsidian: '#05070a',
+        midnight: '#0f172a',
+        'electric-cyan': '#00f0ff',
+        'hyper-violet': '#b026ff',
         accent: {
-          DEFAULT: '#6366f1',
-          soft: 'rgba(99,102,241,0.15)',
+          DEFAULT: '#00f0ff',
+          soft: 'rgba(0, 240, 255, 0.15)',
         },
+      },
+      letterSpacing: {
+        'tech-wide': '0.05em',
+        'tech-wider': '0.1em',
       },
       keyframes: {
         fadeIn: {
@@ -46,6 +54,18 @@ module.exports = {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%':      { transform: 'translateY(-8px)' },
         },
+        'float-y': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%':      { transform: 'translateY(-12px)' },
+        },
+        'bloom-pulse': {
+          '0%, 100%': { opacity: '0.3', transform: 'scale(1)' },
+          '50%':      { opacity: '0.5', transform: 'scale(1.1)' },
+        },
+        'glow-pulse': {
+          '0%, 100%': { filter: 'drop-shadow(0 0 10px rgba(0, 240, 255, 0.4))' },
+          '50%':      { filter: 'drop-shadow(0 0 25px rgba(0, 240, 255, 0.8))' },
+        },
         'spin-slow': {
           to: { transform: 'rotate(360deg)' },
         },
@@ -70,6 +90,9 @@ module.exports = {
         'shimmer':    'shimmer 1.5s ease infinite',
         'blob':       'blob 7s infinite',
         'float':      'float 3s ease-in-out infinite',
+        'float-y':    'float-y 6s ease-in-out infinite',
+        'bloom-pulse':'bloom-pulse 8s ease-in-out infinite',
+        'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
         'spin-slow':  'spin-slow 8s linear infinite',
         'pulse-ring': 'pulse-ring 2s ease infinite',
         'slide-down': 'slide-down 0.3s ease both',
