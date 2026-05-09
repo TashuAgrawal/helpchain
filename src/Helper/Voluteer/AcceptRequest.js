@@ -3,7 +3,7 @@ import axios from "axios";
 async function acceptVolunteerRequest(payload) {
   try {
     const { data } = await axios.post(
-      "/api/volunteer/request/respond-request",
+      "/api/volunteer/respond-request",
       payload
     );
 

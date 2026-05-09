@@ -119,7 +119,7 @@ export async function POST(request) {
       const volunteerNotifications = volunteers.map((vol) => ({
         userId: vol.userId,
         campaignId: newCampaign._id,
-        type: "volunteer_message",
+        type: "campaign_request",
         title: "New Volunteer Opportunity",
         message: `A campaign near you needs volunteers: ${title}`,
         isRead: false,

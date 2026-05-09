@@ -28,6 +28,7 @@ const NotificationSchema = new Schema({
       "volunteer_message",
       "general",
       "new_campaign",
+      "campaign_request",
     ],
     required: true,
   },

@@ -1,8 +1,7 @@
 "use client";
-import { AlertTriangle, Building2, DollarSign, FileText, LayoutDashboard, Users, LogOut } from 'lucide-react'
-import React from 'react'
-import { Button } from '../../ui/button'
-import { Badge } from '../../ui/badge'  // ensure you have Badge component imported
+import { AlertTriangle, Building2, DollarSign, FileText, LayoutDashboard, Users, LogOut, Zap } from 'lucide-react';
+import React from 'react';
+import { Badge } from '../../ui/badge';
 
 interface SidebarProps {
   setActiveTab: (tab: string) => void;
@@ -11,91 +10,70 @@ interface SidebarProps {
   pendingStrikes?: number;
 }
 
+const navItems = [
+  { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'ngos',      label: 'Manage NGOs',  icon: Building2 },
+  { id: 'users',     label: 'Manage Users', icon: Users },
+  { id: 'transactions', label: 'Transactions', icon: DollarSign },
+  { id: 'reports',   label: 'Reports',      icon: FileText },
+  { id: 'strikes',   label: 'Strikes',      icon: AlertTriangle },
+];
 
+const Sidebar: React.FC<SidebarProps> = ({ setActiveTab, activeTab, pendingNGOs = [], pendingStrikes = 0 }) => {
+  const getBadge = (id: string) => {
+    if (id === 'ngos' && pendingNGOs.length > 0)
+      return <Badge className="ml-auto bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs">{pendingNGOs.length}</Badge>;
+    if (id === 'strikes' && pendingStrikes > 0)
+      return <Badge className="ml-auto bg-red-500/20 text-red-300 border border-red-500/30 text-xs">{pendingStrikes}</Badge>;
+    return null;
+  };
 
-
-
-const Sidebar: React.FC<SidebarProps> = ({
-  setActiveTab,
-  activeTab,
-  pendingNGOs = [],
-  pendingStrikes = 0,
-}) => {
-
-  const logout=()=>{
-  }
   return (
-    <aside className="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 fixed h-full transition-colors duration-300">
-      <div className="p-6">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-600 rounded-lg flex items-center justify-center">
-            <LayoutDashboard className="w-6 h-6 text-white" />
+    <aside className="w-64 bg-[#161b27] border-r border-white/[0.06] fixed h-full flex flex-col z-10">
+      {/* Logo */}
+      <div className="p-6 border-b border-white/[0.06]">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/25">
+            <Zap className="w-5 h-5 text-white" />
           </div>
-          <span className="text-gray-900 dark:text-white">Admin Panel</span>
+          <div>
+            <span className="text-white font-bold text-sm tracking-wide">HelpChain</span>
+            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-medium">Admin Panel</p>
+          </div>
         </div>
-
-        <nav className="space-y-1">
-          <button
-            onClick={() => setActiveTab("dashboard")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === "dashboard" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-          >
-            <LayoutDashboard className="w-5 h-5" /> <span>Dashboard</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("ngos")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === "ngos" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-          >
-            <Building2 className="w-5 h-5" /> <span>Manage NGOs</span>
-            {pendingNGOs.length > 0 && (
-              <Badge className="ml-auto bg-red-500 dark:bg-red-600">{pendingNGOs.length}</Badge>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveTab("users")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === "users" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-          >
-            <Users className="w-5 h-5" /> <span>Manage Users</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("transactions")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === "transactions" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-          >
-            <DollarSign className="w-5 h-5" /> <span>Transactions</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("reports")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === "reports" ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-          >
-            <FileText className="w-5 h-5" /> <span>Reports</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("strikes")}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${activeTab === "strikes" ? "bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-          >
-            <AlertTriangle className="w-5 h-5" /> <span>Strikes</span>
-            {pendingStrikes > 0 && (
-              <Badge className="ml-auto bg-red-500 dark:bg-red-600">{pendingStrikes}</Badge>
-            )}
-          </button>
-        </nav>
       </div>
-      <div className="absolute bottom-0 w-64 p-6 border-t border-gray-200 dark:border-gray-700">
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-3 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-          onClick={() => logout()}
-        >
-          <LogOut className="w-5 h-5" /> <span>Logout</span>
-        </Button>
+
+      {/* Nav */}
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+        {navItems.map(({ id, label, icon: Icon }) => {
+          const isActive = activeTab === id;
+          return (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
+                isActive
+                  ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/20'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-white/[0.04] border border-transparent'
+              }`}
+            >
+              <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-indigo-400' : 'text-gray-500 group-hover:text-gray-300'}`} />
+              <span>{label}</span>
+              {getBadge(id)}
+            </button>
+          );
+        })}
+      </nav>
+
+      {/* Footer */}
+      <div className="p-4 border-t border-white/[0.06]">
+        <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200">
+          <LogOut className="w-4 h-4" />
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;

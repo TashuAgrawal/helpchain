@@ -8,14 +8,14 @@ import { connectDB } from "@/app/lib/mongodb";
  */
 export async function GET(request, { params }) {
   try {
-    
+
     const { userId } = await params;
 
     await connectDB();
-    
+
     const notifications = await Notification.find({ userId })
       .sort({ createdAt: -1 });
-    
+
     const unreadCount = await Notification.countDocuments({
       userId,
       isRead: false,

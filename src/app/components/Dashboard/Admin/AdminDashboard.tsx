@@ -321,19 +321,19 @@ export function AdminDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex transition-colors duration-300">
+    <div className="min-h-screen bg-[#0f1117] flex transition-colors duration-300">
       <Sidebar
         setActiveTab={setActiveTab}
         activeTab={activeTab}
         pendingNGOs={pendingNGOs}
         pendingStrikes={pendingStrikesCount}
       />
-      <main className="ml-64 flex-1 p-8">
+      <main className="ml-64 flex-1 p-8 animate-fade-in">
         {activeTab === "dashboard" && (
           <div>
             <div className="mb-8">
-              <h1 className="text-gray-900 dark:text-white mb-2">Admin Dashboard</h1>
-              <p className="text-gray-600 dark:text-gray-300">Platform statistics plus recent donation impact & user feedback</p>
+              <h1 className="text-2xl font-bold text-white mb-1">Admin Dashboard</h1>
+              <p className="text-gray-400 text-sm">Platform statistics, donation impact &amp; user feedback</p>
             </div>
             <StatCards
               totalDonations={totalDonations}
@@ -354,8 +354,8 @@ export function AdminDashboard() {
         {activeTab === "ngos" && (
           <div>
             <div className="mb-8">
-              <h1 className="text-gray-900 dark:text-white mb-2">Manage NGOs</h1>
-              <p className="text-gray-600 dark:text-gray-300">Review, approve NGOs, and view their performance</p>
+              <h1 className="text-2xl font-bold text-white mb-1">Manage NGOs</h1>
+              <p className="text-gray-400 text-sm">Review, approve NGOs, and view their performance</p>
             </div>
             <PendingApprovals
               pendingNGOs={pendingNGOs}
@@ -374,8 +374,8 @@ export function AdminDashboard() {
         {activeTab === "users" && (
           <div>
             <div className="mb-8">
-              <h1 className="text-gray-900 dark:text-white mb-2">Manage Users</h1>
-              <p className="text-gray-600 dark:text-gray-300">View, filter, and manage platform users</p>
+              <h1 className="text-2xl font-bold text-white mb-1">Manage Users</h1>
+              <p className="text-gray-400 text-sm">View, filter, and manage platform users</p>
             </div>
             <AllUsers
               users={users}
@@ -387,8 +387,8 @@ export function AdminDashboard() {
         {activeTab === "transactions" && (
           <div>
             <div className="mb-8">
-              <h1 className="text-gray-900 dark:text-white mb-2">All Transactions</h1>
-              <p className="text-gray-600 dark:text-gray-300">Full donation history with transparency</p>
+              <h1 className="text-2xl font-bold text-white mb-1">All Transactions</h1>
+              <p className="text-gray-400 text-sm">Full donation history with transparency</p>
             </div>
             <NgoSearch
               searchQuery={searchQuery}

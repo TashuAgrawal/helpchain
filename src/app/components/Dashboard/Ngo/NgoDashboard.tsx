@@ -387,11 +387,11 @@ export function NGODashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-      < NgoNavbar links={navLinks} userName="Clean Water Initiative" />
+    <div className="min-h-screen bg-[#0f1117] transition-colors duration-300">
+      <NgoNavbar links={navLinks} userName="Clean Water Initiative" ngoId={ngoId} />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6 dark:bg-gray-800">
+          <TabsList className="grid w-full grid-cols-6 bg-[#161b27] border border-white/[0.06] p-1 rounded-xl">
             <TabsTrigger value="dashboard" className="dark:data-[state=active]:bg-gray-700">Dashboard</TabsTrigger>
             <TabsTrigger value="campaigns" className="dark:data-[state=active]:bg-gray-700">Campaigns</TabsTrigger>
             <TabsTrigger value="donors" className="dark:data-[state=active]:bg-gray-700">Donors</TabsTrigger>

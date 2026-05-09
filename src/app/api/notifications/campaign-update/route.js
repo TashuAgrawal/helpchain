@@ -28,7 +28,7 @@ export async function POST(request) {
       .distinct("userId");
 
     // 🎯 2. Get all followers of NGO
-    const followers = await Follow.find({ ngoId })
+    const followers = await Following.find({ ngoId })
       .distinct("userId");
 
     // 🧠 Merge + remove duplicates

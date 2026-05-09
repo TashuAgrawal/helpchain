@@ -241,14 +241,14 @@ export default function NGOPage() {
     const progress = (raised: number, goal: number) => (raised / goal) * 100;
 
     return (
-        <div className="dark:bg-gray-900 min-h-screen">
+        <div className="min-h-screen bg-[#0f1117]">
             <UserNavbar links={navLinks} userName="User" userId={ngoid} />
 
             <div className="max-w-6xl mx-auto py-8 px-4">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 gap-4 animate-fade-in">
                     <div>
-                        <h1 className="text-4xl font-bold mb-2 text-white">NGO Campaigns</h1>
-                        <p className="text-xl text-gray-300">Support their important causes</p>
+                        <h1 className="text-3xl font-bold text-white mb-1">NGO Campaigns</h1>
+                        <p className="text-gray-400 text-sm">Support their important causes</p>
                     </div>
 
                     <div className="flex gap-3">
@@ -419,81 +419,79 @@ export default function NGOPage() {
                     </DialogContent>
                 </Dialog>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {campaigns.map((c) => {
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
+                    {campaigns.map((c, i) => {
                         const p = progress(c.raised, c.goal);
 
                         return (
-                            <Card
+                            <div
                                 key={c.id}
-                                className="rounded-xl bg-gray-800 border-gray-700 transition-all duration-200 hover:scale-[1.02] hover:shadow-xl hover:shadow-gray-700/30"
+                                className="stagger-card relative rounded-2xl bg-[#1c2233] border border-white/[0.06] overflow-hidden hover:-translate-y-1 hover:shadow-xl hover:shadow-black/30 hover:border-white/[0.10] transition-all duration-300 group"
                             >
-                                <CardHeader>
-                                    <CardTitle className="text-white">{c.title}</CardTitle>
-                                    <div className="flex gap-2 mt-2">
-                                        <Badge className={c.status === "Active" ? "bg-green-800" : "bg-gray-600"}>
-                                            {c.status}
-                                        </Badge>
-                                        <Badge className="bg-gray-700">
-                                            <Calendar className="w-3 h-3 mr-1" />
-                                            {c.startDate}
-                                        </Badge>
+                                {/* Struck overlay */}
+                                {(c as any).isStruck && (
+                                    <div className="absolute inset-x-0 top-0 z-10 flex items-center gap-2 bg-red-500/10 border-b border-red-500/20 px-4 py-2">
+                                        <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                                        <p className="text-red-300 text-xs font-medium">Under review — donations paused</p>
                                     </div>
-                                </CardHeader>
+                                )}
 
-                                <CardContent className="space-y-4">
-                                    <div>
-                                        <div className="flex justify-between text-sm mb-1">
-                                            <span className="text-gray-300">Progress</span>
-                                            <span className="text-white">
-                                                ${c.raised} / ${c.goal}
-                                            </span>
-                                        </div>
-                                        <Progress
-                                            value={p}
-                                            className="h-2 bg-gray-700 [&>div]:from-blue-600 [&>div]:to-teal-600"
-                                        />
-                                        <div className="flex justify-between text-xs mt-1 text-gray-400">
-                                            <span>{p.toFixed(1)}%</span>
-                                            <span>{c.donors} donors</span>
+                                <div className="p-5">
+                                    <div className="flex items-start justify-between mb-3">
+                                        <h3 className="text-white font-semibold text-base leading-snug flex-1 pr-3">{c.title}</h3>
+                                        <div className="flex gap-1.5 flex-shrink-0">
+                                            <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium border ${
+                                                c.status === 'Active'
+                                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                                    : 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                                            }`}>{c.status}</span>
                                         </div>
                                     </div>
 
-                                    <div className="text-sm bg-green-900/20 p-2 rounded-lg border border-green-900/40">
-                                        <p className="text-green-400">
-                                            <FileText className="w-3 h-3 inline mr-1" />
-                                            Latest: {c.lastUpdate}
-                                        </p>
-                                    </div>
-
-                                    {/* Struck banner */}
-                                    {(c as any).isStruck && (
-                                        <div className="flex items-center gap-2 bg-red-900/30 border border-red-700/50 rounded-lg px-3 py-2">
-                                            <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
-                                            <p className="text-red-300 text-xs font-medium">This campaign is currently under review and cannot accept donations.</p>
+                                    <div className="space-y-3 mb-4">
+                                        <div>
+                                            <div className="flex justify-between text-xs mb-1.5">
+                                                <span className="text-gray-400">Progress</span>
+                                                <span className="text-white font-medium tabular-nums">${c.raised.toLocaleString()} / ${c.goal.toLocaleString()}</span>
+                                            </div>
+                                            <div className="h-1.5 rounded-full bg-white/[0.08] overflow-hidden">
+                                                <div
+                                                    className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-violet-500 to-cyan-500 transition-all duration-700"
+                                                    style={{ width: `${Math.min(p, 100)}%` }}
+                                                />
+                                            </div>
+                                            <div className="flex justify-between text-xs mt-1 text-gray-500">
+                                                <span>{p.toFixed(1)}%</span>
+                                                <span>{c.donors} donors</span>
+                                            </div>
                                         </div>
-                                    )}
+
+                                        <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-500/[0.07] rounded-lg px-3 py-2 border border-emerald-500/20">
+                                            <FileText className="w-3 h-3 flex-shrink-0" />
+                                            <span className="truncate">{c.lastUpdate}</span>
+                                        </div>
+                                    </div>
 
                                     <div className="flex gap-2">
                                         <Button
-                                            className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 disabled:opacity-50"
+                                            className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white border-0 rounded-xl disabled:opacity-40 h-9 text-sm"
                                             onClick={() => handleDonate(c)}
                                             disabled={(c as any).isStruck}
                                         >
-                                            <Heart className="w-4 h-4 mr-1" />
-                                            {(c as any).isStruck ? "Locked" : "Donate Now"}
+                                            <Heart className="w-3.5 h-3.5 mr-1.5" />
+                                            {(c as any).isStruck ? 'Locked' : 'Donate Now'}
                                         </Button>
                                         <Button
                                             variant="outline"
-                                            className="border-red-800/60 text-red-400 hover:bg-red-900/20 hover:text-red-300 px-3"
+                                            className="border-red-800/40 text-red-400 hover:bg-red-500/10 hover:text-red-300 hover:border-red-500/40 px-3 h-9 rounded-xl"
                                             title="Report a strike against this campaign"
                                             onClick={() => { setStrikeCampaign(c); setIsStrikeOpen(true); }}
                                         >
-                                            <AlertTriangle className="w-4 h-4" />
+                                            <AlertTriangle className="w-3.5 h-3.5" />
                                         </Button>
                                     </div>
-                                </CardContent>
-                            </Card>
+                                </div>
+                            </div>
                         );
                     })}
 

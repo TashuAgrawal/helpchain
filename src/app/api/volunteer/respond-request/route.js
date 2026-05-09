@@ -44,6 +44,17 @@ export async function POST(request) {
       );
     }
 
+    // 🚫 Guard against duplicate responses
+    if (campaignRecord.requestStatus !== "pending") {
+      return NextResponse.json(
+        {
+          message: `Request already ${campaignRecord.requestStatus}.`,
+          currentStatus: campaignRecord.requestStatus,
+        },
+        { status: 409 }
+      );
+    }
+
     campaignRecord.requestStatus = action;
     await campaignRecord.save();
 

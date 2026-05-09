@@ -90,10 +90,11 @@ export function DashboardTab({
 
   return (
     <>
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-start justify-between animate-fade-in">
         <div>
-          <h1 className="text-gray-900 dark:text-white mb-2">NGO Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-300">Track campaigns, donations & post transparency updates</p>
+          <h1 className="text-2xl font-bold text-white mb-1">NGO Dashboard</h1>
+          <p className="text-gray-400 text-sm">Track campaigns, donations &amp; transparency updates</p>
         </div>
         <div className="flex gap-3">
           <Dialog open={isNewUpdateOpen} onOpenChange={setIsNewUpdateOpen}>
@@ -231,173 +232,99 @@ export function DashboardTab({
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="rounded-xl border-none shadow-sm bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 transition-colors duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+        {[
+          { label: 'Total Raised',       value: `$${totalRaised.toLocaleString()}`,   icon: DollarSign, g: 'from-indigo-500/20 to-indigo-600/10', ib: 'bg-indigo-500/20', ic: 'text-indigo-400', vc: 'text-indigo-300', b: 'border-indigo-500/20' },
+          { label: 'Active Campaigns',   value: activeCampaignsCount,                  icon: TrendingUp,  g: 'from-emerald-500/20 to-emerald-600/10', ib: 'bg-emerald-500/20', ic: 'text-emerald-400', vc: 'text-emerald-300', b: 'border-emerald-500/20' },
+          { label: 'Total Donors',       value: totalDonors,                            icon: Users,       g: 'from-violet-500/20 to-violet-600/10', ib: 'bg-violet-500/20', ic: 'text-violet-400', vc: 'text-violet-300', b: 'border-violet-500/20' },
+          { label: 'Avg Rating',         value: `${averageRating.toFixed(1)}/5`,        icon: TrendingUp,  g: 'from-amber-500/20 to-amber-600/10', ib: 'bg-amber-500/20', ic: 'text-amber-400', vc: 'text-amber-300', b: 'border-amber-500/20' },
+        ].map((s) => (
+          <div key={s.label} className={`stagger-card relative overflow-hidden rounded-2xl bg-gradient-to-br ${s.g} border ${s.b} p-6 group hover:-translate-y-1 hover:shadow-lg transition-all duration-300`}>
+            <div className={`absolute -top-6 -right-6 w-24 h-24 rounded-full ${s.ib} blur-2xl opacity-50 group-hover:opacity-80 transition-opacity`} />
+            <div className="relative flex items-center justify-between">
               <div>
-                <p className="text-blue-700 dark:text-blue-300 text-sm">Total Raised</p>
-                <h3 className="text-blue-900 dark:text-blue-100 mt-1">${totalRaised.toLocaleString()}</h3>
+                <p className="text-xs font-medium uppercase tracking-widest text-gray-400 mb-1">{s.label}</p>
+                <p className={`text-3xl font-bold ${s.vc} tabular-nums`}>{s.value}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-600 dark:bg-blue-500 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-white" />
+              <div className={`w-11 h-11 ${s.ib} rounded-xl flex items-center justify-center flex-shrink-0`}>
+                <s.icon className={`w-5 h-5 ${s.ic}`} />
               </div>
             </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-xl border-none shadow-sm bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/30 dark:to-teal-800/30 transition-colors duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-teal-700 dark:text-teal-300 text-sm">Active Campaigns</p>
-                <h3 className="text-teal-900 dark:text-teal-100 mt-1">{activeCampaignsCount}</h3>
-              </div>
-              <div className="w-12 h-12 bg-teal-600 dark:bg-teal-500 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-xl border-none shadow-sm bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 transition-colors duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-purple-700 dark:text-purple-300 text-sm">Total Donors</p>
-                <h3 className="text-purple-900 dark:text-purple-100 mt-1">{totalDonors}</h3>
-              </div>
-              <div className="w-12 h-12 bg-purple-600 dark:bg-purple-500 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="rounded-xl border-none shadow-sm bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 transition-colors duration-300">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-orange-700 dark:text-orange-300 text-sm">Avg Rating</p>
-                <h3 className="text-orange-900 dark:text-orange-100 mt-1">{averageRating.toFixed(1)}/5</h3>
-              </div>
-              <div className="w-12 h-12 bg-orange-600 dark:bg-orange-500 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        ))}
       </div>
 
       {/* Quick Actions */}
-      <Card className="rounded-xl border-none shadow-sm bg-white dark:bg-gray-800">
-        <CardHeader>
-          <CardTitle className="dark:text-white">Quick Actions</CardTitle>
-          <CardDescription className="dark:text-gray-400">Frequently used actions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button 
-              variant="outline" 
-              className="h-auto flex-col gap-2 p-4 rounded-lg dark:border-gray-600 dark:hover:bg-gray-700"
-              onClick={() => setIsThankYouDialogOpen(true)}
-            >
-              <Mail className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              <span className="text-sm">Thank Donors</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-auto flex-col gap-2 p-4 rounded-lg dark:border-gray-600 dark:hover:bg-gray-700"
-              onClick={() => setIsEmailCampaignDialogOpen(true)}
-            >
-              <Send className="w-6 h-6 text-teal-600 dark:text-teal-400" />
-              <span className="text-sm">Email Campaign</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-auto flex-col gap-2 p-4 rounded-lg dark:border-gray-600 dark:hover:bg-gray-700"
-              onClick={() => setIsFinancialReportDialogOpen(true)}
-            >
-              <FileText className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              <span className="text-sm">Upload Report</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="h-auto flex-col gap-2 p-4 rounded-lg dark:border-gray-600 dark:hover:bg-gray-700"
-              onClick={() => setIsTeamMemberDialogOpen(true)}
-            >
-              <UserPlus className="w-6 h-6 text-orange-600 dark:text-orange-400" />
-              <span className="text-sm">Add Team Member</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="rounded-2xl bg-[#1c2233] border border-white/[0.06] p-6">
+        <h3 className="text-white font-semibold mb-1">Quick Actions</h3>
+        <p className="text-gray-400 text-sm mb-4">Frequently used actions</p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: 'Thank Donors',   icon: Mail,     color: 'text-indigo-400', bg: 'bg-indigo-500/10 hover:bg-indigo-500/20 border-indigo-500/20', fn: () => setIsThankYouDialogOpen(true) },
+            { label: 'Email Campaign', icon: Send,     color: 'text-emerald-400', bg: 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/20', fn: () => setIsEmailCampaignDialogOpen(true) },
+            { label: 'Upload Report',  icon: FileText, color: 'text-violet-400',  bg: 'bg-violet-500/10 hover:bg-violet-500/20 border-violet-500/20',  fn: () => setIsFinancialReportDialogOpen(true) },
+            { label: 'Add Member',     icon: UserPlus, color: 'text-amber-400',   bg: 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20',   fn: () => setIsTeamMemberDialogOpen(true) },
+          ].map((a) => (
+            <button key={a.label} onClick={a.fn} className={`flex flex-col items-center gap-2.5 p-4 rounded-xl border transition-all duration-200 ${a.bg}`}>
+              <a.icon className={`w-5 h-5 ${a.color}`} />
+              <span className="text-xs font-medium text-gray-300">{a.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="rounded-xl border-none shadow-sm bg-white dark:bg-gray-800">
-          <CardHeader>
-            <CardTitle className="dark:text-white">Recent Donations</CardTitle>
-            <CardDescription className="dark:text-gray-400">Latest contributions from donors</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentDonations.slice(0, 5).map((donation) => (
-                <div key={donation.id} className="flex items-center justify-between pb-3 border-b dark:border-gray-700 last:border-b-0">
-                  <div className="flex-1">
-                    <h4 className="text-gray-900 dark:text-white">{donation.donor}</h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{donation.date}</p>
-                    {donation.message && (
-                      <p className="text-sm text-gray-600 dark:text-gray-300 italic mt-1">"{donation.message}"</p>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <h4 className="text-teal-600 dark:text-teal-400">${donation.amount}</h4>
-                  </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div className="rounded-2xl bg-[#1c2233] border border-white/[0.06] p-6">
+          <h3 className="text-white font-semibold mb-1">Recent Donations</h3>
+          <p className="text-gray-400 text-sm mb-4">Latest contributions from donors</p>
+          <div className="space-y-3">
+            {recentDonations.slice(0, 5).map((donation) => (
+              <div key={donation.id} className="flex items-center justify-between py-2.5 border-b border-white/[0.05] last:border-b-0">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">{donation.donor}</p>
+                  <p className="text-xs text-gray-500">{donation.date}</p>
+                  {donation.message && <p className="text-xs text-gray-400 italic mt-0.5 truncate">&ldquo;{donation.message}&rdquo;</p>}
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                <span className="text-emerald-400 font-semibold text-sm ml-4 flex-shrink-0">${donation.amount}</span>
+              </div>
+            ))}
+            {recentDonations.length === 0 && <p className="text-gray-500 text-sm text-center py-4">No donations yet</p>}
+          </div>
+        </div>
 
-        <Card className="rounded-xl border-none shadow-sm bg-white dark:bg-gray-800">
-          <CardHeader>
-            <CardTitle className="dark:text-white">Pending Responses</CardTitle>
-            <CardDescription className="dark:text-gray-400">Community problems and donor feedback</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <AlertCircle className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                  <div>
-                    <p className="text-sm text-gray-900 dark:text-white">Community Problems</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Awaiting response</p>
-                  </div>
+        <div className="rounded-2xl bg-[#1c2233] border border-white/[0.06] p-6">
+          <h3 className="text-white font-semibold mb-1">Pending Responses</h3>
+          <p className="text-gray-400 text-sm mb-4">Community problems and donor feedback</p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-amber-500/[0.07] border border-amber-500/20">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-4 h-4 text-amber-400" />
+                <div>
+                  <p className="text-sm text-white font-medium">Community Problems</p>
+                  <p className="text-xs text-gray-400">Awaiting response</p>
                 </div>
-                <Badge className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400">
-                  {communityProblems.length}
-                </Badge>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <MessageCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  <div>
-                    <p className="text-sm text-gray-900 dark:text-white">Donor Feedback</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Needs reply</p>
-                  </div>
-                </div>
-                <Badge className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
-                  {donorFeedback.filter(f => !f.replied).length}
-                </Badge>
-              </div>
-              <Button 
-                variant="outline" 
-                className="w-full rounded-lg dark:border-gray-600 dark:hover:bg-gray-700"
-                onClick={() => setActiveTab("community")}
-              >
-                View All
-              </Button>
+              <span className="badge-warning">{communityProblems.length}</span>
             </div>
-          </CardContent>
-        </Card>
+            <div className="flex items-center justify-between p-3 rounded-xl bg-indigo-500/[0.07] border border-indigo-500/20">
+              <div className="flex items-center gap-3">
+                <MessageCircle className="w-4 h-4 text-indigo-400" />
+                <div>
+                  <p className="text-sm text-white font-medium">Donor Feedback</p>
+                  <p className="text-xs text-gray-400">Needs reply</p>
+                </div>
+              </div>
+              <span className="badge-info">{donorFeedback.filter(f => !f.replied).length}</span>
+            </div>
+            <button
+              className="w-full mt-2 py-2.5 rounded-xl text-sm font-medium text-gray-300 border border-white/[0.08] hover:bg-white/[0.04] transition-colors"
+              onClick={() => setActiveTab('community')}
+            >
+              View All
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Dialogs triggered from this tab */}
