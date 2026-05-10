@@ -20,6 +20,7 @@ export async function POST(request: Request) {
     const normalizedEmail = email.toLowerCase().trim();
 
     const otp = generateOtp();
+    console.log("otp : ", otp);
     const otpHash = hashOtp(normalizedEmail, otp);
 
     await OtpVerification.deleteMany({

@@ -92,7 +92,7 @@ function OtpVerifyInner() {
         otp,
         userType,
       });
-
+      console.log('lw otp', otp);
       if (response.data.customToken && auth) {
         setSuccess(true);
         await signInWithCustomToken(auth, response.data.customToken);
@@ -135,7 +135,7 @@ function OtpVerifyInner() {
               <Heart className="w-6 h-6 text-white" fill="white" />
             </div>
             <div>
-              <p className="font-bold text-gray-900 dark:text-white leading-tight">TransparentAid</p>
+              <p className="font-bold text-gray-900 dark:text-white leading-tight">HelpChain</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">Transparent donations, trusted impact</p>
             </div>
           </div>
@@ -250,8 +250,8 @@ function OtpVerifyInner() {
                   {resendTimer > 0
                     ? `Resend in ${resendTimer}s`
                     : resending
-                    ? "Sending…"
-                    : "Resend OTP"
+                      ? "Sending…"
+                      : "Resend OTP"
                   }
                 </button>
               </div>

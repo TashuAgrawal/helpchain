@@ -65,7 +65,7 @@ export function UserNavbar({
               <Heart className="w-6 h-6 text-white" fill="white" />
             </div>
             <span className="text-gray-900 dark:text-white text-lg font-semibold">
-              TransparentAid
+              HelpChain
             </span>
           </div>
 

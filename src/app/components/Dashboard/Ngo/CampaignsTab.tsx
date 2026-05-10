@@ -1,7 +1,7 @@
 // src/app/components/ngo-dashboard/CampaignsTab.tsx
 
-import React from 'react';
-import { FileText, Edit, Trash2, Calendar, Eye } from "lucide-react";
+import React, { useState } from 'react';
+import { FileText, Edit, Trash2, Calendar, Eye, Users, CheckCircle, XCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../../ui/card";  
 import { Button } from "../../ui/button";  
 import { Badge } from "../../ui/badge";  
@@ -32,8 +32,52 @@ export function CampaignsTab({
   handleEditCampaign, handleDeleteCampaign
 }: CampaignsTabProps) {
   
-  const router = useRouter(); // Add router hook
-  
+  const router = useRouter(); 
+  const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
+  const [attendanceCampaign, setAttendanceCampaign] = useState<Campaign | null>(null);
+  const [volunteers, setVolunteers] = useState<any[]>([]);
+  const [loadingVolunteers, setLoadingVolunteers] = useState(false);
+
+  const handleOpenAttendance = async (campaign: Campaign) => {
+    setAttendanceCampaign(campaign);
+    setIsAttendanceOpen(true);
+    setLoadingVolunteers(true);
+    try {
+      const res = await fetch(`/api/campaigns/${campaign.id}/volunteers`);
+      const data = await res.json();
+      setVolunteers(data.volunteers || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingVolunteers(false);
+    }
+  };
+
+  const setAttendanceStatus = async (volunteerId: string, newAttended: boolean) => {
+    if (!attendanceCampaign) return;
+    
+    const vol = volunteers.find(v => v.volunteerId === volunteerId);
+    if (vol?.attended === newAttended) return;
+
+    setVolunteers(prev => prev.map(v => v.volunteerId === volunteerId ? { ...v, attended: newAttended } : v));
+    
+    try {
+      const res = await fetch('/api/notifications/volunteer-attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: volunteerId,
+          campaignid: attendanceCampaign.id,
+          attended: newAttended
+        })
+      });
+      if (!res.ok) throw new Error("Failed to update");
+    } catch (err) {
+      setVolunteers(prev => prev.map(v => v.volunteerId === volunteerId ? { ...v, attended: vol?.attended } : v));
+      console.error(err);
+    }
+  };
+
   return (
     <>
       <div className="flex items-center justify-between">
@@ -115,11 +159,21 @@ export function CampaignsTab({
                     <Edit className="w-4 h-4 mr-1" />
                     Edit
                   </Button>
+
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="rounded-lg text-purple-600 border-purple-300 hover:bg-purple-50 dark:text-purple-400 dark:border-purple-800 dark:hover:bg-purple-900/20"
+                    onClick={() => handleOpenAttendance(campaign)}
+                  >
+                    <Users className="w-4 h-4 mr-1" />
+                    Attendance
+                  </Button>
                   
                   <Button 
                     variant="outline" 
                     size="sm" 
-                    className="rounded-lg text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20 col-span-2"
+                    className="rounded-lg text-red-600 border-red-300 hover:bg-red-50 dark:border-red-800 dark:hover:bg-red-900/20"
                     onClick={() => handleDeleteCampaign(campaign.id)}
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
@@ -178,6 +232,52 @@ export function CampaignsTab({
              </Button>
            </div>
          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Attendance Dialog */}
+      <Dialog open={isAttendanceOpen} onOpenChange={setIsAttendanceOpen}>
+        <DialogContent className="rounded-xl dark:bg-gray-800 dark:border-gray-700 max-w-md">
+          <DialogHeader>
+            <DialogTitle className="dark:text-white">Manage Attendance</DialogTitle>
+            <DialogDescription className="dark:text-gray-400">
+              {attendanceCampaign?.title}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2 max-h-[60vh] overflow-y-auto pr-2">
+            {loadingVolunteers ? (
+              <p className="text-center text-sm text-gray-500">Loading volunteers...</p>
+            ) : volunteers.length === 0 ? (
+              <p className="text-center text-sm text-gray-500">No accepted volunteers found for this campaign.</p>
+            ) : (
+              volunteers.map(vol => (
+                <div key={vol.volunteerId} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{vol.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{vol.email}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant={vol.attended === true ? "default" : "outline"}
+                      className={vol.attended === true ? "bg-green-600 hover:bg-green-700 text-white" : "dark:border-gray-600 dark:text-gray-300"}
+                      onClick={() => setAttendanceStatus(vol.volunteerId, true)}
+                    >
+                      <CheckCircle className="w-4 h-4 mr-1" /> Present
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={vol.attended === false ? "default" : "outline"}
+                      className={vol.attended === false ? "bg-red-600 hover:bg-red-700 text-white" : "dark:border-gray-600 dark:text-gray-300"}
+                      onClick={() => setAttendanceStatus(vol.volunteerId, false)}
+                    >
+                      <XCircle className="w-4 h-4 mr-1" /> Absent
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </>

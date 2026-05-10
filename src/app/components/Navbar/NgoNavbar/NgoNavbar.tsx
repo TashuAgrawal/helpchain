@@ -60,7 +60,7 @@ export function NgoNavbar({ links = [], onLogout, userName, ngoId }: NavbarProps
               <Heart className="w-6 h-6 text-white" fill="white" />
             </div>
             <span className="text-gray-900 dark:text-white text-lg font-semibold transition-colors duration-300">
-              TransparentAid
+              HelpChain
             </span>
           </div>
 

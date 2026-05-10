@@ -122,7 +122,7 @@ const LoginForm = () => {
               <Heart className="w-7 h-7 text-white" fill="white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">TransparentAid</h1>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white">HelpChain</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 Transparent donations, trusted impact
               </p>

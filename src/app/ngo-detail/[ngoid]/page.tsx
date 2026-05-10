@@ -84,12 +84,12 @@ export default function NGOPage() {
             localStorage.setItem("addedRating", String(previousRating));
             setRating(previousRating);
 
-            const followresult = await CheckFollowing(userId , ngoid);
+            const followresult = await CheckFollowing(userId, ngoid);
 
 
             setFollowerCount(followresult.followerCount);
             setIsFollowing(followresult.isFollowing)
-            
+
         }
 
         load();
@@ -209,7 +209,7 @@ export default function NGOPage() {
             });
 
             const temp = await UpdateRaisedAmount({
-                campaignId:selectedCampaign.id, amount:amount
+                campaignId: selectedCampaign.id, amount: amount
             });
 
             // ✅ UPDATE LOCAL CAMPAIGN STATE (no refetch)
@@ -263,8 +263,8 @@ export default function NGOPage() {
                         <Button
                             variant="outline"
                             className={`rounded-xl px-6 border-gray-600 text-gray-200 hover:bg-gray-700 hover:text-white transition-all ${isFollowing
-                                    ? 'bg-green-600 border-green-500 text-white hover:bg-green-500 shadow-md'
-                                    : 'border-gray-600'
+                                ? 'bg-green-600 border-green-500 text-white hover:bg-green-500 shadow-md'
+                                : 'border-gray-600'
                                 }`}
                             onClick={handleFollowToggle}
                             disabled={isDonating || isSubmitting}
@@ -422,7 +422,7 @@ export default function NGOPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
                     {campaigns.map((c, i) => {
                         const p = progress(c.raised, c.goal);
-
+                        console.log("C is ", c)
                         return (
                             <div
                                 key={c.id}
@@ -440,11 +440,10 @@ export default function NGOPage() {
                                     <div className="flex items-start justify-between mb-3">
                                         <h3 className="text-white font-semibold text-base leading-snug flex-1 pr-3">{c.title}</h3>
                                         <div className="flex gap-1.5 flex-shrink-0">
-                                            <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium border ${
-                                                c.status === 'Active'
-                                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                                    : 'bg-gray-500/10 text-gray-400 border-gray-500/20'
-                                            }`}>{c.status}</span>
+                                            <span className={`text-xs px-2.5 py-0.5 rounded-full font-medium border ${c.status === 'Active'
+                                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                                : 'bg-gray-500/10 text-gray-400 border-gray-500/20'
+                                                }`}>{c.status}</span>
                                         </div>
                                     </div>
 

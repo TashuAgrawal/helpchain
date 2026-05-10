@@ -82,18 +82,18 @@ export function ImpactTab({
 
 
 
-      try {
-        const res = await toggleVolunteerActive(userId, pincode);
-        if (res.success) {
-          setisvolunteer(!isvolunteer); // Toggle the state
-          toast.success(res.message);
-        } else {
-          toast.error(res.message);
-        }
-      } catch (error) {
-        toast.error("An error occurred while updating volunteer status.");
+    try {
+      const res = await toggleVolunteerActive(userId, pincode);
+      if (res.success) {
+        setisvolunteer(!isvolunteer); // Toggle the state
+        toast.success(res.message);
+      } else {
+        toast.error(res.message);
       }
-    };
+    } catch (error) {
+      toast.error("An error occurred while updating volunteer status.");
+    }
+  };
 
   const handleToggleVolunteer = async () => {
     if (!userId) {
@@ -101,7 +101,7 @@ export function ImpactTab({
       return;
     }
 
-    
+
 
     if (isvolunteer) {
       // ✅ Already volunteer → directly call function
@@ -202,18 +202,16 @@ export function ImpactTab({
               return (
                 <div
                   key={badge.id}
-                  className={`p-4 rounded-lg text-center transition-all ${
-                    earned
-                      ? "bg-white dark:bg-gray-800 shadow-md"
-                      : "bg-gray-100 dark:bg-gray-700/50 opacity-50"
-                  }`}
+                  className={`p-4 rounded-lg text-center transition-all ${earned
+                    ? "bg-white dark:bg-gray-800 shadow-md"
+                    : "bg-gray-100 dark:bg-gray-700/50 opacity-50"
+                    }`}
                 >
                   <div
-                    className={`inline-flex p-3 rounded-full mb-2 ${
-                      earned
-                        ? "bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900/30 dark:to-yellow-800/30"
-                        : "bg-gray-200 dark:bg-gray-600"
-                    }`}
+                    className={`inline-flex p-3 rounded-full mb-2 ${earned
+                      ? "bg-gradient-to-br from-yellow-100 to-yellow-200 dark:from-yellow-900/30 dark:to-yellow-800/30"
+                      : "bg-gray-200 dark:bg-gray-600"
+                      }`}
                   >
                     <div
                       className={
@@ -285,8 +283,8 @@ export function ImpactTab({
         </CardContent>
       </Card>
 
-      <div className="bg-white">
-        <button onClick={handleToggleVolunteer} className="text-black">
+      <div className="bg-transparent">
+        <button onClick={handleToggleVolunteer} className="p-4 rounded-full text-primary bg-gradient-to-br from-blue-50 to-teal-50 dark:from-blue-900/20 dark:to-teal-900/20">
           Toggle Volunteer
         </button>
       </div>

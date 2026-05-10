@@ -262,9 +262,20 @@ export function NGODashboard() {
     setIsEditCampaignOpen(false);
     setSelectedCampaign(null);
   };
-  const handleDeleteCampaign = (id: string) => {
-    setCampaigns(campaigns.filter(c => c.id !== id));
-    toast.success("Campaign deleted successfully!");
+  const handleDeleteCampaign = async (id: string) => {
+    try {
+      const response = await fetch(`/api/campaigns/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete campaign');
+      }
+      setCampaigns(campaigns.filter(c => c.id !== id));
+      toast.success("Campaign deleted successfully!");
+    } catch (error) {
+      console.error("Error deleting campaign:", error);
+      toast.error("Failed to delete campaign");
+    }
   };
   const handleCreateUpdate = () => {
     if (!newUpdateTitle || !newUpdateDescription) {

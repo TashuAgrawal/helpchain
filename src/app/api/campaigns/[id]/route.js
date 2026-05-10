@@ -39,3 +39,35 @@ export async function GET(
     );
   }
 }
+
+export async function DELETE(
+  req,
+  { params } 
+) {
+  try {
+    const { id } = await params;
+    
+    await connectDB();
+    
+    const deletedCampaign = await Campaign.findByIdAndDelete(id);
+    
+    if (!deletedCampaign) {
+      return NextResponse.json(
+        { error: 'Campaign not found' },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json({
+      message: 'Campaign deleted successfully',
+      id: deletedCampaign._id.toString(),
+    });
+    
+  } catch (error) {
+    console.error('Error deleting campaign:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

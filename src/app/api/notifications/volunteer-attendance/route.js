@@ -21,21 +21,26 @@ export async function POST(request) {
       );
     }
 
-    // 🔍 1. Update CampaignVolunteer record
-    const campaignRecord = await CampaignVolunteer.findOneAndUpdate(
-      { campaignId: campaignid, volunteerId: userId },
-      { attended },
-      { new: true }
-    );
-
-    if (!campaignRecord) {
+    // 🔍 1. Fetch current CampaignVolunteer record BEFORE updating
+    const existingRecord = await CampaignVolunteer.findOne({ campaignId: campaignid, volunteerId: userId });
+    
+    if (!existingRecord) {
       return NextResponse.json(
         { message: "Campaign volunteer record not found." },
         { status: 404 }
       );
     }
 
-    // 🔍 2. Update Volunteer stats
+    const previousAttended = existingRecord.attended;
+
+    // 🔍 2. Update CampaignVolunteer record
+    const campaignRecord = await CampaignVolunteer.findOneAndUpdate(
+      { campaignId: campaignid, volunteerId: userId },
+      { attended },
+      { new: true }
+    );
+
+    // 🔍 3. Update Volunteer stats
     const volunteer = await Volunteer.findOne({ userId });
 
     if (!volunteer) {
@@ -49,8 +54,13 @@ export async function POST(request) {
 
     if (attended) {
       statusText = "attended";
+    }
 
+    // Only update if the status actually changed
+    if (previousAttended === false && attended === true) {
       volunteer.actuallyVolunteered += 1;
+    } else if (previousAttended === true && attended === false) {
+      volunteer.actuallyVolunteered = Math.max(0, volunteer.actuallyVolunteered - 1);
     }
 
     await volunteer.save();

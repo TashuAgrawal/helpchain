@@ -10,9 +10,8 @@ export default async function sendOtpEmail(receiverEmail: string, code: string) 
       },
     });
     console.log({
-        user: process.env.EMAIL_FROM,
-        pass: process.env.EMAIL_PASSWORD,
-      });
+      user: process.env.EMAIL_FROM,
+    });
     const mailOptions = {
       from: process.env.EMAIL_FROM,
       to: receiverEmail,
@@ -26,6 +25,7 @@ export default async function sendOtpEmail(receiverEmail: string, code: string) 
         </div>
       `,
     };
+    console.log("Code", code);
 
     await transporter.sendMail(mailOptions);
 

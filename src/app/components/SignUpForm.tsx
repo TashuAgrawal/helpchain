@@ -96,7 +96,7 @@ const SignUpForm = () => {
               <Heart className="w-7 h-7 text-white" fill="white" />
             </div>
             <div>
-              <h1 className="text-gray-900 dark:text-white">TransparentAid</h1>
+              <h1 className="text-gray-900 dark:text-white">THelpChain</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">Start making a difference today</p>
             </div>
           </div>
@@ -160,13 +160,12 @@ const SignUpForm = () => {
               </button>
               {formData.password && (
                 <p
-                  className={`text-sm mt-1 ${
-                    passwordStrength === "Strong"
+                  className={`text-sm mt-1 ${passwordStrength === "Strong"
                       ? "text-green-600"
                       : passwordStrength === "Moderate"
-                      ? "text-yellow-500"
-                      : "text-red-500"
-                  }`}
+                        ? "text-yellow-500"
+                        : "text-red-500"
+                    }`}
                 >
                   Password Strength: {passwordStrength}
                 </p>
